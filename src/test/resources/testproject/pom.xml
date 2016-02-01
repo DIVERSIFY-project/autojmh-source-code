@@ -1,0 +1,127 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fr.inria.covermath</groupId>
+    <artifactId>test-project</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>Test project</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <!-- Used to locate the profile specific configuration file. -->
+        <build.profile.id>dev</build.profile.id>
+        <jacoco.it.execution.data.file>${project.build.directory}/coverage-reports/jacoco-it.exec
+        </jacoco.it.execution.data.file>
+        <jacoco.ut.execution.data.file>${project.build.directory}/coverage-reports/jacoco-ut.exec
+        </jacoco.ut.execution.data.file>
+        <jdk.version>1.7</jdk.version>
+        <jacoco.address>localhost</jacoco.address>
+        <jacoco.port>6300</jacoco.port>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Only unit tests are run by default. -->
+        <skip.integration.tests>true</skip.integration.tests>
+        <skip.unit.tests>false</skip.unit.tests>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.1.201405082137</version>
+                <executions>
+                    <!--
+                        Prepares the property pointing to the JaCoCo runtime agent which
+                        is passed as VM argument when the Surefire Maven plugin is executed.
+                    -->
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                                Sets the name of the property containing the settings
+                                for JaCoCo runtime agent.
+                            -->
+                            <propertyName>surefireArgLine</propertyName>
+                            <!-- This is needed in order to Junco connecto to Jacoco-->
+                            <output>tcpserver</output>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Used for unit tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.15</version>
+
+                <!-- Force use Junco provider -->
+                <dependencies>
+                    <dependency>
+                        <groupId>fr.inria.juncoprovider</groupId>
+                        <artifactId>junco-provider</artifactId>
+                        <version>0.1</version>
+                    </dependency>
+                </dependencies>
+
+                <configuration>
+                    <!-- Properties of the Junco provider -->
+                    <properties>
+                        <property>
+                            <name>html:report</name>
+                            <value>true</value>
+                        </property>
+                        <property>
+                            <name>transplant:file</name>
+                            <value>${basedir}/resources/transplant.json</value>
+                        </property>
+                        <property>
+                            <name>alwaysResetCoverageInformation</name>
+                            <value>true</value>
+                        </property>
+                    </properties>
+                    <!-- Sets the VM argument line used when unit tests are run. -->
+                    <argLine>${surefireArgLine}</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>fr.inria.juncoprovider</groupId>
+            <artifactId>junco-provider</artifactId>
+            <version>0.1</version>
+        </dependency>
+    </dependencies>
+
+</project>
