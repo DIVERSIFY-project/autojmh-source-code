@@ -1,15 +1,18 @@
 package fr.inria.autojmh.selection;
 
+import fr.inria.autojmh.instrument.DataContextResolver;
 import fr.inria.autojmh.snippets.BenchSnippet;
-import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.support.reflect.declaration.CtClassImpl;
 
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Detect all statements tagged with an AutoJMH tagglet.
@@ -40,7 +43,7 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
     public void process(CtStatement statement) {
         try {
 
-            if ( statement.getParent(CtClassImpl.class) == null ) return;
+            if (statement.getParent(CtClassImpl.class) == null) return;
 
             String className = statement.getPosition().getCompilationUnit().
                     getMainType().getQualifiedName();
@@ -64,7 +67,7 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
             }
         } catch (Exception e) {
             SourcePosition p = statement.getPosition();
-            logger.warning("Error while processing statement at "
+            logger.warn("Error while processing statement at "
                     + p.getFile().getAbsolutePath() + ".  Line:" + p.getLine() + ", Col:" + p.getColumn()
                     + " Got: " + e.getMessage());
             if (failFirst) throw new RuntimeException(e);
@@ -126,18 +129,22 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
         snippets = new ArrayList<>();
         //Instrument the data context
         for (Map.Entry<Tagglet, CtStatement> e : getMatches().entrySet()) {
-            BenchSnippet s = new BenchSnippet();
-            s.setASTElement(e.getValue());
-            //The Bench snippet will auto resolve its context
-            //if the size of the Input access is zero, it cannot be used to avoid DCE, therefore
-            //a warning is issued
-            if (s.getTemplateAccessesWrappers().size() == 0)
-                logger.warning("Cannot resolve context for " + s.getPosition());
-            else {
-                snippets.add(s);
-                BenchSnippetDetectionData data = new BenchSnippetDetectionData();
-                data.setSnippet(s);
-                notify(SNIPPET_DETECTED, s.getASTElement(), data);
+            BenchSnippet s = new BenchSnippet(e.getValue());
+            if (DataContextResolver.checkPreconditions(s)) {
+                //The Bench snippet will auto resolve its context
+                //if the size of the Input access is zero, it cannot be used to avoid DCE, therefore
+                //a warning is issued
+                if (s.getTemplateAccessesWrappers().size() == 0) {
+                    logger.warn("There is no variables to record at " + s.getPosition() + " this is not supported");
+                } else {
+                    //Finally if conditions are meet and there is variables, process the snnippet
+                    snippets.add(s);
+                    BenchSnippetDetectionData data = new BenchSnippetDetectionData();
+                    data.setSnippet(s);
+                    notify(SNIPPET_DETECTED, s.getASTElement(), data);
+                }
+            } else {
+                logger.warn("Snippet at " + s.getPosition() + " does not meet preconditions");
             }
         }
     }

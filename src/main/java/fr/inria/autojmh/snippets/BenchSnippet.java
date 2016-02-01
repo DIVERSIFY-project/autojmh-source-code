@@ -6,6 +6,7 @@ import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
@@ -93,6 +94,7 @@ public class BenchSnippet {
      * no AST element has been set
      */
     private int lineNumber;
+    private Boolean meetPreconditions;
 
     /**
      * Gets the name of the micro benchmark class for this snippet
@@ -108,6 +110,14 @@ public class BenchSnippet {
      * Type of the benchmark method.
      */
     private String benchMethodReturnType = null;
+
+    public BenchSnippet() {
+
+    }
+
+    public BenchSnippet(CtStatement e) {
+        setASTElement(e);
+    }
 
     public String getPosition() {
         if (astElement != null)
@@ -261,5 +271,13 @@ public class BenchSnippet {
         return !inv.getExecutable().isStatic() &&
                 (inv.getTarget() == null || inv.getTarget().toString().equals("this")) &&
                 isSupported(inv.getExecutable().getDeclaringType());
+    }
+
+    public Boolean getMeetPreconditions() {
+        return meetPreconditions;
+    }
+
+    public void setMeetPreconditions(Boolean meetPreconditions) {
+        this.meetPreconditions = meetPreconditions;
     }
 }

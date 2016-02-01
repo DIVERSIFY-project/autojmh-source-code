@@ -1,27 +1,21 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.instrument.DataContextInstrumenter;
-import fr.inria.autojmh.instrument.DataContextResolver;
 import fr.inria.autojmh.projectbuilders.Maven.MavenProjectBuilder;
 import fr.inria.autojmh.projectbuilders.ProjectFiles;
-import fr.inria.autojmh.selection.SnippetSelector;
 import fr.inria.autojmh.selection.SelectionFileWalker;
+import fr.inria.autojmh.selection.SnippetSelector;
 import fr.inria.autojmh.selection.TaggedStatementDetector;
 import fr.inria.autojmh.selection.Tagglet;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import org.apache.log4j.Logger;
-import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeSnippetStatement;
-import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static fr.inria.autojmh.instrument.DataContextResolver.checkPreconditions;
 
 /**
  * Class that drives the whole generation instrument.
@@ -86,49 +80,38 @@ public class AJMHGenerator implements BenchmakGenerator {
     public void generate() {
         try {
             //Clean working and result's dir
-            log.info("Cleaning working dirs");
+            System.out.println("Cleaning working dirs");
             cleanWorkingDir();
             cleanResultsDir();
 
             //Build the output project
-            log.info("Building output POM file");
+            System.out.println("Building output POM file");
             MavenProjectBuilder builder = new MavenProjectBuilder(conf);
             builder.build();
 
             //Collect all tagglets from the input source
-            log.info("Collecting tagglets");
+            System.out.println("Collecting tagglets");
             Map<String, List<Tagglet>> tagglets = null;
             if (customDetector == null) tagglets = collectTagglets();
 
             //Instrument all tagged points to record the data context
-            log.info("Instrumenting data context");
+            System.out.println("Instrumenting data context");
             List<BenchSnippet> snippets = recordDataContext(tagglets);
 
-            log.info("Removing non compliant snippets");
-            List<BenchSnippet> complyingSnippets = new ArrayList<>();
-            for (BenchSnippet snippet : snippets) {
-                if (checkPreconditions(snippet)) complyingSnippets.add(snippet);
-            }
-            log.info("Total snippets: " + snippets.size());
-            log.info("Snippet accepted: " + complyingSnippets.size());
-            if ( complyingSnippets.size() == 0 ) {
-                log.info("No snippets accepted. Exiting");
+            if ( snippets.size() == 0 ) {
+                log.warn("No snippet found to instrument. Exiting");
                 return;
             }
 
-            snippets = complyingSnippets;
-
             //Clean the instrumentation from the snippets
             cleanInstrumentation(snippets);
-
-            //Finally generate the benchmarks
 
             runGenerators(new MainClassGenerator(), snippets);
             log.info("Main file generated");
             MicrobenchmarkGenerator g = new MicrobenchmarkGenerator();
             runGenerators(g, snippets);
 
-            log.info("Microbenchmarks generated: " + g.getGeneratedCount());
+            System.out.println("Microbenchmarks generated: " + g.getGeneratedCount());
 
             log.info("Microbenchmarks generated");
             runGenerators(new LoaderGenerator(), snippets);
@@ -147,40 +130,10 @@ public class AJMHGenerator implements BenchmakGenerator {
 
     private void cleanInstrumentation(List<BenchSnippet> snippets) {
         for (BenchSnippet s : snippets) {
-            CtStatement st = s.getASTElement();
-            if (st.getParent() instanceof CtBlock) {
-                CtBlock block = (CtBlock) st.getParent();
-                int k = 0;
-                while (k < block.getStatements().size()){
-                    CtStatement blockSt = block.getStatement(k);
-                    if (blockSt instanceof CtCodeSnippetStatement) {
-                        CtCodeSnippetStatement snippet = (CtCodeSnippetStatement) blockSt;
-                        if (snippet.getValue().startsWith("fr.inria.autojmh"))
-                            block.removeStatement(blockSt);
-                    } else k++;
-                }
-
-
-                /*
-                int index = block.getStatements().indexOf(st) - 1;
-                try {
-                    while (index >= 0 && block.getStatements().get(index) instanceof CtCodeSnippetStatement) {
-                        block.removeStatement(block.getStatement(index));
-                        index--;
-                    }
-                } catch (IndexOutOfBoundsException ex) {
-                    log.warn("Unexpected exception");
-                }
-                try {
-                    index += 2;
-                    while (index < block.getStatements().size() &&
-                            block.getStatements().get(index) instanceof CtCodeSnippetStatement) {
-                        block.removeStatement(block.getStatement(index));
-                    }
-                } catch (IndexOutOfBoundsException ex) {
-                    log.warn("Unexpected exception");
-                }*/
-            }
+            List<CtCodeSnippetStatement> sts = s.getASTElement().getElements(
+                    new TypeFilter<CtCodeSnippetStatement>(CtCodeSnippetStatement.class));
+            for (CtCodeSnippetStatement st : sts)
+                if (st.getValue().startsWith("fr.inria.")) st.setValue("");
         }
     }
 

@@ -47,6 +47,7 @@ public class LightLog {
         logFileName = getThreadLogFilePath(thread);
         stringBuilders = new StringBuilder();
         logThreadName = getThreadFileName(thread);
+
     }
 
     /**

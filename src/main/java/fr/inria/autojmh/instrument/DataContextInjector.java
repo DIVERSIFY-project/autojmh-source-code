@@ -7,16 +7,16 @@ import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.diversify.syringe.detectors.DetectionData;
 import fr.inria.diversify.syringe.injectors.AbstractInjector;
 import org.apache.log4j.Logger;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtCodeSnippetStatement;
+import spoon.reflect.code.CtStatement;
+import spoon.reflect.code.CtStatementList;
+import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
-import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtCodeSnippetStatementImpl;
 import spoon.support.reflect.code.CtStatementListImpl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Instrument the selected statements in order to record the data context
@@ -73,9 +73,6 @@ public class DataContextInjector extends AbstractInjector {
             //Build the before injectors
             BenchSnippet input = ((BenchSnippetDetectionData) data).getSnippet();
 
-            //Obtain return statements to instrument them
-            List<CtReturn> returns = element.getElements(new TypeFilter<CtReturn>(CtReturn.class));
-
             int initializedCount = 0;
             for (TemplateInputVariable wrap : input.getTemplateAccessesWrappers())
                 if (wrap.isInitialized()) initializedCount++;
@@ -103,20 +100,14 @@ public class DataContextInjector extends AbstractInjector {
 
                 //Record After
                 statements = new CtStatementListImpl();
-                CtStatementList afterRetSt = new CtStatementListImpl();
                 setInjectionTemplate(Log.class.getCanonicalName() + ".getLog().log%type%(%var%, \"%signature%\", true)");
                 for (int i = 0; i < input.getTemplateAccessesWrappers().size(); i++) {
                     TemplateInputVariable wrap = input.getTemplateAccessesWrappers().get(i);
-                    if (wrap.isInitialized()) {
+                    if (wrap.isInitialized())
                         statements.addStatement(buildCode(wrap, input));
-                        if ( returns != null && returns.size() > 0 )
-                            afterRetSt.addStatement(buildCode(wrap, input));
-                    }
                 }
                 try {
                     ((CtStatement) element).insertAfter(statements);
-                    if ( returns != null && returns.size() > 0 )
-                        for ( CtReturn r : returns ) r.insertBefore(afterRetSt);
                 } catch (IllegalArgumentException e) {
                     log.warn("Unexpected exception while inserting statements after.");
                 }

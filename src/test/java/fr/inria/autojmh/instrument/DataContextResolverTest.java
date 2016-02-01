@@ -9,6 +9,7 @@ import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.diversify.syringe.SpoonMetaFactory;
+import fr.inria.diversify.syringe.detectors.Detector;
 import org.junit.Test;
 import spoon.processing.ProcessingManager;
 import spoon.reflect.code.CtLoop;
@@ -17,6 +18,7 @@ import spoon.reflect.factory.Factory;
 import spoon.support.QueueProcessingManager;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static fr.inria.autojmh.selection.TaggletStatementDetectorTest.CLASS_NAME;
@@ -28,23 +30,6 @@ import static junit.framework.Assert.assertTrue;
 
 public class DataContextResolverTest extends BenchmarkTest {
 
-    @Test
-    public void testExtractContext() throws Exception {
-        //Get some BenchSnippets
-        TaggedStatementDetector p = process(
-                this.getClass().getResource("/input_sources/java").toURI().getPath(), getTaggletsList(CLASS_NAME));
-        List<BenchSnippet> benchs = p.getSnippets();
-
-        //Resolve inputs to some of them
-        DataContextResolver resolver = new DataContextResolver();
-        resolver.resolve(benchs.get(0));
-
-        List<TemplateInputVariable> wraps = benchs.get(0).getTemplateAccessesWrappers();
-        assertEquals(1, wraps.size());
-        assertEquals("a", wraps.get(0).getVariableName());
-        assertTrue(wraps.get(0).isInitialized());
-        assertFalse(wraps.get(0).getIsArray());
-    }
 
     /**
      * Selects from the DataContextPlayGround class located in the resources of the test,
@@ -55,7 +40,6 @@ public class DataContextResolverTest extends BenchmarkTest {
      * @throws Exception
      */
     private List<BenchSnippet> loopSnippets(final String method) throws Exception {
-        //Process the two files
         Factory factory = new SpoonMetaFactory().buildNewFactory(
                 this.getClass().getResource(
                         "/testproject/src/main/java/fr/inria/testproject/context").toURI().getPath(), 5);
@@ -73,6 +57,24 @@ public class DataContextResolverTest extends BenchmarkTest {
         pm.addProcessor(selector);
         pm.process();
         return selector.getSnippets();
+    }
+
+    @Test
+    public void testExtractContext() throws Exception {
+        //Get some BenchSnippets
+        TaggedStatementDetector p = process(
+                this.getClass().getResource("/input_sources/java").toURI().getPath(), getTaggletsList(CLASS_NAME));
+        List<BenchSnippet> benchs = p.getSnippets();
+
+        //Resolve inputs to some of them
+        DataContextResolver resolver = new DataContextResolver();
+        resolver.resolve(benchs.get(0));
+
+        List<TemplateInputVariable> wraps = benchs.get(0).getTemplateAccessesWrappers();
+        assertEquals(1, wraps.size());
+        assertEquals("a", wraps.get(0).getVariableName());
+        assertTrue(wraps.get(0).isInitialized());
+        assertFalse(wraps.get(0).getIsArray());
     }
 
     /**

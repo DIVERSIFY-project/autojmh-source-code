@@ -1,18 +1,24 @@
 package fr.inria.autojmh.instrument;
 
 import fr.inria.autojmh.snippets.BenchSnippet;
-import fr.inria.controlflow.*;
+import fr.inria.controlflow.ControlFlowBuilder;
+import fr.inria.controlflow.ControlFlowGraph;
+import fr.inria.controlflow.NotFoundException;
 import fr.inria.dataflow.InitializedVariables;
 import org.apache.log4j.Logger;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtNewClassImpl;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -43,7 +49,11 @@ public class DataContextResolver {
 
         //Check some preconditions needed for the processor to run:
         //All invocations within the body are statics
-        if (!checkPreconditions(inputs)) return false;
+        if (!checkPreconditions(inputs)) {
+            log.warn("Snippet at " + inputs.getPosition() + " does not meet preconditions");
+            return false;
+        }
+
 
         CtStatement statement = inputs.getASTElement();
 
@@ -228,20 +238,15 @@ public class DataContextResolver {
      * @return
      */
     public static boolean isCollection(CtTypeReference ref) {
-        try {
-            Set<CtTypeReference> refs = ref.getSuperInterfaces();
-            if (refs == null) return false;
-            for (CtTypeReference r : refs) {
-                if (r.getQualifiedName().equals("java.util.Collection") ||
-                        isCollection(r)) {
-                    return true;
-                }
+        Set<CtTypeReference<?>> refs = ref.getSuperInterfaces();
+        if (refs == null) return false;
+        for (CtTypeReference r : refs) {
+            if (r.getQualifiedName().equals("java.util.Collection") ||
+                    isCollection(r)) {
+                return true;
             }
-            return false;
-        } catch (Exception ex) {
-            log.warn("Unexpected exception " + ex.getMessage());
-            return false;
         }
+        return false;
     }
 
     //public CtTypeRefere
@@ -253,23 +258,18 @@ public class DataContextResolver {
      * @return
      */
     public static boolean isSerializable(CtTypeReference componentType) {
-        try {
-            HashSet<CtTypeReference> refs = new HashSet<>();
-            if (componentType.getSuperInterfaces() != null) refs.addAll(componentType.getSuperInterfaces());
-            CtTypeReference superRef = componentType.getSuperclass();
-            if (superRef != null) refs.add(superRef);
-            if (refs.size() == 0) return false;
-            for (CtTypeReference ref : refs) {
-                if (ref.getQualifiedName().equals("java.io.Serializable") ||
-                        isSerializable(ref)) {
-                    return true;
-                }
+        HashSet<CtTypeReference> refs = new HashSet<>();
+        if (componentType.getSuperInterfaces() != null) refs.addAll(componentType.getSuperInterfaces());
+        CtTypeReference superRef = componentType.getSuperclass();
+        if (superRef != null) refs.add(superRef);
+        if (refs.size() == 0) return false;
+        for (CtTypeReference ref : refs) {
+            if (ref.getQualifiedName().equals("java.io.Serializable") ||
+                    isSerializable(ref)) {
+                return true;
             }
-            return false;
-        } catch (Exception ex) {
-            log.warn("Unexpected exception " + ex);
-            return false;
         }
+        return false;
     }
 
     /**
@@ -336,10 +336,28 @@ public class DataContextResolver {
      * @return
      */
     public static boolean checkPreconditions(BenchSnippet snippet) {
-        return snippet.getASTElement() != null &&
-                !containsUnsuportedVars(snippet) &&
-                !containsUnsupportedDynamicInvocations(snippet.getASTElement(), 3);
+        if (snippet.getMeetPreconditions() == null) {
+            Boolean preconditions = snippet.getASTElement() != null &&
+                    !containsUnsuportedVars(snippet) &&
+                    !containsUnsupportedDynamicInvocations(snippet.getASTElement(), 3);
+            snippet.setMeetPreconditions(preconditions);
+            return preconditions;
+        } else return snippet.getMeetPreconditions();
+    }
 
+    protected boolean testme;
+
+    /**
+     * Checks whether two elements are from the same package
+     *
+     * @param e1
+     * @param t
+     * @return
+     */
+    private static boolean samePackage(CtElement e1, CtTypeReference t) {
+        String s1 = e1.getPosition().getCompilationUnit().getMainType().getPackage().getQualifiedName();
+        String s2 = t.getQualifiedName();
+        return s1.equals(s2);
     }
 
     /**
@@ -349,7 +367,10 @@ public class DataContextResolver {
      *
      * @param element Invocation to inspect
      * @param levels  Levels to explore
-     * @return True if the method contains non static invocations
+     * @return False if:
+     * <p/>
+     * 1. Is a non public dynamic method
+     * 2. Belongs to a non supported variable
      */
     private static boolean containsUnsupportedDynamicInvocations(CtElement element, int levels) {
         if (levels <= 0) return true;
@@ -359,11 +380,14 @@ public class DataContextResolver {
                 new TypeFilter<CtNewClassImpl>(CtNewClassImpl.class));
         for (CtNewClassImpl n : newClasses) {
             try {
-                ModifierKind m = n.getExecutable().getDeclaration().getVisibility();
-                if ( m == ModifierKind.PRIVATE || m == ModifierKind.PROTECTED ) return true;
-            } catch (NullPointerException ex) {
-                log.warn("Unable to find if element " + element.toString() + " contains unsupported methods");
-                return true;
+                Method m = n.getExecutable().getActualMethod();
+                if (m != null && n.getAnonymousClass() != null && //An anonymous class is extraible
+                        !Modifier.isPublic(m.getModifiers())) return true;
+                    //If we can't get the method and they belong to the same package then its accessible
+                else if (samePackage(element, n.getExecutable().getDeclaringType())) return true;
+            } catch (Exception ex) {
+                //If we can't get the method and they belong to the same package then its accessible
+                if (samePackage(element, n.getExecutable().getDeclaringType())) return true;
             }
         }
 
@@ -374,13 +398,18 @@ public class DataContextResolver {
             //Static methods are supported whether they are private or not
             if (inv.getExecutable().isStatic()) continue;
 
+            //Handle some special weird cases Spoon is giving me
+            if (inv.toString().equals("super()") &&
+                    inv.getExecutable().toString().equals("java.lang.Object.Object")) continue;
+
+
             boolean isPublicDynamic = false;
             try {
-                ModifierKind m = inv.getExecutable().getDeclaration().getVisibility();
-                isPublicDynamic = m != ModifierKind.PRIVATE && m != ModifierKind.PROTECTED;
-            } catch (NullPointerException ex) {
-                log.warn("Unable to find if element " + element.toString() + " contains unsupported methods");
-                return true;
+                isPublicDynamic = Modifier.isPublic(inv.getExecutable().getActualMethod().getModifiers());
+            } catch (Exception ex) {
+                if (inv.getExecutable().getDeclaringType().isInterface()) isPublicDynamic = true;
+                else if (!samePackage(element, inv.getExecutable().getDeclaringType())) isPublicDynamic = true;
+                else isPublicDynamic = false;
             }
             //private dynamic methods are not currently supported
             if (isPublicDynamic) {
@@ -392,10 +421,10 @@ public class DataContextResolver {
                             return true;
                             //If called by another invocation, it will depend on whether the other is supported or not
                         } else if (inv.getTarget() instanceof CtInvocation) continue;
-                    } else isSupported(inv.getTarget().getType());
-                    if (containsUnsupportedDynamicInvocations(inv, levels - 1)) return true;
+                    } else if (!isSupported(inv.getTarget().getType())) return true;
+                    //if (containsUnsupportedDynamicInvocations(inv, levels - 1)) return true;
                 } catch (NullPointerException ex) {
-                    log.warn("Unable to find if element " + element.toString() + " contains unsupported methods");
+                    log.warn("Unable to find if element \"" + element.toString() + "\" contains unsupported methods");
                     return true;
                 }
             } else return true;
