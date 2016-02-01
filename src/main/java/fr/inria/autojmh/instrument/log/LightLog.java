@@ -2,7 +2,8 @@ package fr.inria.autojmh.instrument.log;
 
 import java.io.*;
 import java.util.Properties;
-//DO NOT REMOVE THIS STATIC IMPORT!
+
+//ATTENTION: DO NOT REMOVE THE FOLLOWING STATIC IMPORT!
 import static java.lang.System.lineSeparator;
 
 /**
