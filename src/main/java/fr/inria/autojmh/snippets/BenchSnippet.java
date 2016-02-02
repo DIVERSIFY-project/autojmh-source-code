@@ -1,12 +1,13 @@
 package fr.inria.autojmh.snippets;
 
+import fr.inria.autojmh.analysis.ResetAnalysis;
+import fr.inria.autojmh.generators.reset.ResetFactory;
 import fr.inria.autojmh.instrument.DataContextResolver;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtReturn;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
@@ -23,6 +24,7 @@ import static fr.inria.autojmh.instrument.DataContextResolver.isSupported;
  */
 public class BenchSnippet {
 
+    public static String RESET = "___reset";
     /**
      * Indicates whether this snippet contains a dynamic calls to an implicit "this" which is serializable
      * <p/>
@@ -94,6 +96,7 @@ public class BenchSnippet {
      * no AST element has been set
      */
     private int lineNumber;
+
     private Boolean meetPreconditions;
 
     /**
@@ -162,10 +165,20 @@ public class BenchSnippet {
         //TODO: Unit test for this
         if (templateAccessesWrappers != null) return templateAccessesWrappers;
 
+        ResetAnalysis analysis = new ResetAnalysis();
+        analysis.setDynamicCallsForcesReset(true);
+        analysis.run(getASTElement());
+
+
+        ResetFactory factory = new ResetFactory();
         ArrayList<TemplateInputVariable> result = new ArrayList<>();
         for (CtVariableAccess access : getAccesses()) {
             TemplateInputVariable var = new TemplateInputVariable();
             var.initialize(this, access);
+            if (var.isInitialized() && analysis.getMustBeReset().contains(access) && factory.canProvide(access)) {
+                var.setResetCode(factory.fetchGenerator(access).
+                        resetFromAnotherVar(var.getVariableName(), var.getVariableName() + RESET));
+            }
             result.add(var);
         }
 
@@ -177,6 +190,7 @@ public class BenchSnippet {
             thiz.initializeAsThiz(this);
             result.add(thiz);
         }
+
         templateAccessesWrappers = result;
         return result;
     }
@@ -279,5 +293,11 @@ public class BenchSnippet {
 
     public void setMeetPreconditions(Boolean meetPreconditions) {
         this.meetPreconditions = meetPreconditions;
+    }
+
+    public boolean hasResetCode() {
+        for (TemplateInputVariable v : getTemplateAccessesWrappers())
+            if (v.getMustReset()) return true;
+        return false;
     }
 }

@@ -29,23 +29,42 @@ public class ${class_name}_Benchmark {
 
 <#list input_vars as input_var>
     public ${input_var.variableTypeName} ${input_var.templateCodeCompilableName} ;
+    <#if input_var.mustReset == true >
+    public ${input_var.variableTypeName} ${input_var.templateCodeCompilableName}___reset ;
+    </#if>
 </#list>
 
-    @Setup(Level.Invocation)
-    public void setup() {
+    @Setup(Level.Trial)
+    public void setupMicrobenchmark() {
         try {
             Loader ${class_name}_s = new Loader();
             ${class_name}_s.openStream(DATA_ROOT_FOLDER, DATA_FILE);
 
     <#list input_vars as input_var>
         <#if input_var.initialized == true >
+            <#if input_var.mustReset == true >
+            ${input_var.templateCodeCompilableName}___reset = ${class_name}_s.read${input_var.loadMethodName}();
+            ${input_var.templateCodeCompilableName} = new ${input_var.variableTypeName}();
+            <#else>
             ${input_var.templateCodeCompilableName} = ${class_name}_s.read${input_var.loadMethodName}();
+            </#if>
         </#if>
     </#list>
 
             ${class_name}_s.closeStream();
         } catch(Exception e) { throw new RuntimeException(e); }
     }
+
+<#if reset_code >
+    @Setup(Level.Invocation)
+    public void resetMicrobenchmark() {
+      <#list input_vars as input_var>
+        <#if input_var.mustReset == true >
+            ${input_var.resetCode}
+        </#if>
+      </#list>
+    }
+</#if>
 
     ${static_methods}
 

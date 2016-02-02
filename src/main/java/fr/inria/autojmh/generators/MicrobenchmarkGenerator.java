@@ -194,6 +194,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         }
 
         HashMap<String, Object> input = new HashMap<String, Object>();
+        input.put("reset_code", snippet.hasResetCode());
         input.put("package_name", packageName);
         input.put("imports", imports);
         input.put("class_comments", "Benchmark auto generated using AutoJMH");

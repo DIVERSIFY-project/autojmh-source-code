@@ -58,7 +58,7 @@ public class ${class_name}Test {
 
         ${class_name}_Benchmark benchmark =
             new ${class_name}_Benchmark();
-        benchmark.setup();
+        benchmark.setupMicrobenchmark();
         benchmark.doBenchmark();
 
 <@assertions/>
