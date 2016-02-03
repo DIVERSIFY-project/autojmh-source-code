@@ -69,8 +69,14 @@ public class ${class_name}_Benchmark {
     ${static_methods}
 
     @Benchmark
+    <#if black_holes_neded>
+    public ${bench_method_type} doBenchmark(BlackHole bh) {
+    <#else>
     public ${bench_method_type} doBenchmark() {
-    ${snippet_code};
+    </#if>
+        ${snippet_code};
+
+
 
         ${(return_statement)!}
     }
