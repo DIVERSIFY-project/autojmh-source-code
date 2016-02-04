@@ -1,7 +1,5 @@
 package fr.inria.autojmh.snippets;
 
-import fr.inria.autojmh.analysis.ResetAnalysis;
-import fr.inria.autojmh.generators.reset.ResetFactory;
 import fr.inria.autojmh.instrument.DataContextResolver;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtReturn;
@@ -24,7 +22,6 @@ import static fr.inria.autojmh.instrument.DataContextResolver.isSupported;
  */
 public class BenchSnippet {
 
-    public static String RESET = "___reset";
     /**
      * Indicates whether this snippet contains a dynamic calls to an implicit "this" which is serializable
      * <p/>
@@ -97,8 +94,6 @@ public class BenchSnippet {
      */
     private int lineNumber;
 
-    private Boolean meetPreconditions;
-
     /**
      * Gets the name of the micro benchmark class for this snippet
      *
@@ -113,14 +108,6 @@ public class BenchSnippet {
      * Type of the benchmark method.
      */
     private String benchMethodReturnType = null;
-
-    public BenchSnippet() {
-
-    }
-
-    public BenchSnippet(CtStatement e) {
-        setASTElement(e);
-    }
 
     public String getPosition() {
         if (astElement != null)
@@ -165,20 +152,10 @@ public class BenchSnippet {
         //TODO: Unit test for this
         if (templateAccessesWrappers != null) return templateAccessesWrappers;
 
-        ResetAnalysis analysis = new ResetAnalysis();
-        analysis.setDynamicCallsForcesReset(true);
-        analysis.run(getASTElement());
-
-
-        ResetFactory factory = new ResetFactory();
         ArrayList<TemplateInputVariable> result = new ArrayList<>();
         for (CtVariableAccess access : getAccesses()) {
             TemplateInputVariable var = new TemplateInputVariable();
             var.initialize(this, access);
-            if (var.isInitialized() && analysis.getMustBeReset().contains(access) && factory.canProvide(access)) {
-                var.setResetCode(factory.fetchGenerator(access).
-                        resetFromAnotherVar(var.getVariableName(), var.getVariableName() + RESET));
-            }
             result.add(var);
         }
 
@@ -190,7 +167,6 @@ public class BenchSnippet {
             thiz.initializeAsThiz(this);
             result.add(thiz);
         }
-
         templateAccessesWrappers = result;
         return result;
     }
@@ -285,19 +261,5 @@ public class BenchSnippet {
         return !inv.getExecutable().isStatic() &&
                 (inv.getTarget() == null || inv.getTarget().toString().equals("this")) &&
                 isSupported(inv.getExecutable().getDeclaringType());
-    }
-
-    public Boolean getMeetPreconditions() {
-        return meetPreconditions;
-    }
-
-    public void setMeetPreconditions(Boolean meetPreconditions) {
-        this.meetPreconditions = meetPreconditions;
-    }
-
-    public boolean hasResetCode() {
-        for (TemplateInputVariable v : getTemplateAccessesWrappers())
-            if (v.getMustReset()) return true;
-        return false;
     }
 }

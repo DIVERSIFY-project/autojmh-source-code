@@ -9,7 +9,6 @@ import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.diversify.syringe.SpoonMetaFactory;
-import fr.inria.diversify.syringe.detectors.Detector;
 import org.junit.Test;
 import spoon.processing.ProcessingManager;
 import spoon.reflect.code.CtLoop;
@@ -18,7 +17,6 @@ import spoon.reflect.factory.Factory;
 import spoon.support.QueueProcessingManager;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static fr.inria.autojmh.selection.TaggletStatementDetectorTest.CLASS_NAME;
@@ -29,35 +27,6 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 public class DataContextResolverTest extends BenchmarkTest {
-
-
-    /**
-     * Selects from the DataContextPlayGround class located in the resources of the test,
-     * the variables of the snippets in the method passed as parameter
-     *
-     * @param method Method passed as parameter
-     * @return
-     * @throws Exception
-     */
-    private List<BenchSnippet> loopSnippets(final String method) throws Exception {
-        Factory factory = new SpoonMetaFactory().buildNewFactory(
-                this.getClass().getResource(
-                        "/testproject/src/main/java/fr/inria/testproject/context").toURI().getPath(), 5);
-        ProcessingManager pm = new QueueProcessingManager(factory);
-        SnippetSelector<CtLoop> selector = new SnippetSelector<CtLoop>() {
-            @Override
-            public void process(CtLoop element) {
-                String name = element.getPosition().getCompilationUnit().getMainType().getSimpleName();
-                CtMethod m = element.getParent(CtMethod.class);
-                if (m != null && name.equals("DataContextPlayGround") && m.getSimpleName().equals(method)) {
-                    select(element);
-                }
-            }
-        };
-        pm.addProcessor(selector);
-        pm.process();
-        return selector.getSnippets();
-    }
 
     @Test
     public void testExtractContext() throws Exception {
@@ -75,6 +44,35 @@ public class DataContextResolverTest extends BenchmarkTest {
         assertEquals("a", wraps.get(0).getVariableName());
         assertTrue(wraps.get(0).isInitialized());
         assertFalse(wraps.get(0).getIsArray());
+    }
+
+    /**
+     * Selects from the DataContextPlayGround class located in the resources of the test,
+     * the variables of the snippets in the method passed as parameter
+     *
+     * @param method Method passed as parameter
+     * @return
+     * @throws Exception
+     */
+    private List<BenchSnippet> loopSnippets(final String method) throws Exception {
+        //Process the two files
+        Factory factory = new SpoonMetaFactory().buildNewFactory(
+                this.getClass().getResource(
+                        "/testproject/src/main/java/fr/inria/testproject/context").toURI().getPath(), 5);
+        ProcessingManager pm = new QueueProcessingManager(factory);
+        SnippetSelector<CtLoop> selector = new SnippetSelector<CtLoop>() {
+            @Override
+            public void process(CtLoop element) {
+                String name = element.getPosition().getCompilationUnit().getMainType().getSimpleName();
+                CtMethod m = element.getParent(CtMethod.class);
+                if (m != null && name.equals("DataContextPlayGround") && m.getSimpleName().equals(method)) {
+                    select(element);
+                }
+            }
+        };
+        pm.addProcessor(selector);
+        pm.process();
+        return selector.getSnippets();
     }
 
     /**

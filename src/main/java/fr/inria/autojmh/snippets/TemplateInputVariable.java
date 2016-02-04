@@ -65,18 +65,6 @@ public class TemplateInputVariable {
      */
     private String packageQualifiedName;
 
-    /**
-     * Code to reset the variable in case it change value
-     */
-    private String resetCode;
-
-    /**
-     * Indicate if the variable must be reset
-     * @return
-     */
-    public boolean getMustReset() {
-        return isInitialized() && resetCode != null && !resetCode.isEmpty();
-    }
 
     private void doInitialize(BenchSnippet parent, CtTypeReference typeRef) {
         if ( typeRef instanceof CtArrayTypeReference) {
@@ -305,13 +293,5 @@ public class TemplateInputVariable {
 
     public void setPackageQualifiedName(String packageQualifiedName) {
         this.packageQualifiedName = packageQualifiedName;
-    }
-
-    public String getResetCode() {
-        return resetCode;
-    }
-
-    public void setResetCode(String resetCode) {
-        this.resetCode = resetCode;
     }
 }

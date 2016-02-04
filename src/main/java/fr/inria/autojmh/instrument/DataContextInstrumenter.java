@@ -2,7 +2,6 @@ package fr.inria.autojmh.instrument;
 
 
 import fr.inria.autojmh.instrument.log.*;
-import fr.inria.autojmh.selection.SnippetSelector;
 import fr.inria.autojmh.selection.TaggedStatementDetector;
 import fr.inria.autojmh.selection.Tagglet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
@@ -10,10 +9,11 @@ import fr.inria.autojmh.tool.Configurable;
 import fr.inria.diversify.syringe.Configuration;
 import fr.inria.diversify.syringe.SyringeInstrumenter;
 import fr.inria.diversify.syringe.SyringeInstrumenterImpl;
-import org.apache.log4j.Logger;
+import fr.inria.diversify.syringe.detectors.Detector;
 import spoon.reflect.code.CtStatement;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Syringe program to instrument a series of tagged statements
@@ -40,7 +40,7 @@ public class DataContextInstrumenter implements Configurable {
      * Output path of the instrumented project
      */
     String outputPrj;
-    private SnippetSelector<CtStatement> detector;
+    private Detector<CtStatement> detector;
     private String executionResult;
 
     public void execute() throws Exception {
@@ -66,17 +66,14 @@ public class DataContextInstrumenter implements Configurable {
         l.setOnlyCopyLogger(true);
         l.writeIdFile("microbenchmarkProperties.id");
 
-        if (detector.getElementsDetectedCount() == 0)
-            log.warn("No snippet for benchmarking detected");
-        else {
-            executionResult = EXECUTION_OK;
-            try {
-                l.runTests(true);
-            } catch (Exception e) {
-                executionResult = e.getMessage();
-            }
-        }
+        if (detector.getElementsDetectedCount() == 0) log.warning("No snippet for benchmarking detected");
 
+        executionResult = EXECUTION_OK;
+        try {
+            l.runTests(true);
+        } catch (Exception e) {
+            executionResult = e.getMessage();
+        }
 
     }
 
@@ -91,11 +88,11 @@ public class DataContextInstrumenter implements Configurable {
 
     }
 
-    public void setDetector(SnippetSelector<CtStatement> detector) {
+    public void setDetector(Detector<CtStatement> detector) {
         this.detector = detector;
     }
 
-    public SnippetSelector<CtStatement> getDetector() {
+    public Detector<CtStatement> getDetector() {
         return detector;
     }
 

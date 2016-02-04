@@ -1,6 +1,5 @@
 package fr.inria.autojmh.selection;
 
-import fr.inria.autojmh.instrument.DataContextResolver;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.diversify.syringe.detectors.AbstractDetector;
 import spoon.reflect.code.CtStatement;
@@ -33,27 +32,16 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
         return getSnippets().size();
     }
 
-
-    /**
-     * Select E only if it meet the preconditions
-     * @param e
-     */
-    public void selectIfMeetPreconditions(E e) {
-        BenchSnippet s = new BenchSnippet(e);
-        if (DataContextResolver.checkPreconditions(s)) getSnippets().add(s);
-    }
-
-    /**
-     * Select E anyway
-     * @param e
-     */
     public void select(E e) {
-        getSnippets().add(new BenchSnippet(e));
+        BenchSnippet s = new BenchSnippet();
+        s.setASTElement(e);
+        if (snippets == null) snippets = new ArrayList<>();
+        snippets.add(s);
     }
 
     @Override
     public void processingDone() {
-        for (BenchSnippet s : getSnippets()) {
+        for (BenchSnippet s : snippets) {
             BenchSnippetDetectionData data = new BenchSnippetDetectionData();
             data.setSnippet(s);
             notify(SNIPPET_DETECTED, s.getASTElement(), data);

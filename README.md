@@ -1,6 +1,6 @@
 # AutoJMH
 
-**AutoJMH** is a tool that takes two inputs, one segment of code (belonging to an existing program) and one training execution (could be a  unit test run for example) and builds full JMH microbenchmark for the segment. Please note that it does not generate only the scaffold for you to write a microbechmark, it places code inside the wrapper method, fully generating the microbenchmark.
+**AutoJMH** is a tool that takes as input one segment of code (belonging to an existing program) and one training execution (could be a unit test run for example) and builds full JMH microbenchmark for the segment. The tool generates the JMH class and then places the segment code inside the wrapper method, fully generating the microbenchmark. **AutoJMH** also initializes the variables of the microbenchmark and perform a series of analysis to automatically avoid common microbenchmarking pitfalls.
 
 For example, suppose that given the following program we want to extract the `int a = (int)Math.log(n * n / 2) * myBubbleSort(list)` into a microbenchmark:
 

@@ -1,12 +1,16 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.instrument.DataContextFileChooser;
+import fr.inria.autojmh.instrument.DataContextResolver;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.controlflow.AllBranchesReturn;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.*;
+import spoon.reflect.declaration.CtExecutable;
+import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtParameter;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtCodeSnippetExpressionImpl;
@@ -14,7 +18,10 @@ import spoon.support.reflect.declaration.CtMethodImpl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static fr.inria.autojmh.snippets.TemplateInputVariable.getCompilableName;
 
@@ -187,24 +194,13 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         }
 
         HashMap<String, Object> input = new HashMap<String, Object>();
-        input.put("reset_code", snippet.hasResetCode());
         input.put("package_name", packageName);
         input.put("imports", imports);
         input.put("class_comments", "Benchmark auto generated using AutoJMH");
         input.put("class_name", snippet.getMicrobenchmarkClassName());
         input.put("input_vars", snippet.getTemplateAccessesWrappers());
         input.put("bench_method_type", snippet.getBenchMethodReturnType());
-
-        List<CtLocalVariable> bhVars = blackHolesNeeded(snippet);
-        if ( bhVars.size() > 0 && input.get("return_statement") == null && input.get("bench_method_type") == "void" ) {
-            input.put("bench_method_type", bhVars.get(0).getType().getQualifiedName());
-        }
-        input.put("return_statement", getDefaultReturn(snippet, bhVars));
-        input.put("black_holes_neded", bhVars.size() > 0);
-        input.put("black_holes", bhVars);
-
-
-
+        input.put("return_statement", getDefaultReturn(snippet));
 
         //Set the path to the files with the data context
         getChooser().setDataContextPath(dataContextPath);
@@ -229,34 +225,11 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         generatedCount++;
     }
 
-    /**
-     * Indicates if black holes are needed and for which variables
-     * <p/>
-     * Current analysis have limitations. It only checks that there are assigned local variables not being used further
-     * ahead and assumes that the original code did use them.
-     * This is limited because it does not ensure to preserve optimizations in the original code.
-     * <p/>
-     * The correct way should be check they are used in both the original and preserve only if so.
-     *
-     * @param snippet
-     * @return
-     */
-    private List<CtLocalVariable> blackHolesNeeded(BenchSnippet snippet) {
-        return snippet.getASTElement().getElements(new TypeFilter<CtLocalVariable>(CtLocalVariable.class));
-    }
-
-    private String getDefaultReturn(BenchSnippet snippet, List<CtLocalVariable> blakHoles) {
+    private String getDefaultReturn(BenchSnippet snippet) {
 
         //Check if the return is actually needed
         AllBranchesReturn branchesReturn = new AllBranchesReturn();
-        if (branchesReturn.execute(snippet.getASTElement())) {
-            if ( blakHoles.size() > 0 ) {
-                String s = blakHoles.get(0).getSimpleName();
-                blakHoles.remove(0);
-                return "return " + s + ";";
-            }
-            return null;
-        }
+        if (branchesReturn.execute(snippet.getASTElement())) return null;
 
         //Find the type to return something
         List<CtReturn> returns = snippet.getASTElement().getElements(new TypeFilter<CtReturn>(CtReturn.class));

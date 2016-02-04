@@ -16,13 +16,10 @@ public class AllLops {
         org.apache.log4j.PropertyConfigurator.configure(
                 new File(AllLops.class.getClassLoader().getResource("log4j.properties").toURI().getPath()).getAbsolutePath());
 
-
         AJMHConfiguration conf = new AJMHConfiguration();
-
-        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk\\commons-io-trunk");
-
+/*
         conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\vectorz-develop");
- /*       conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\working");
+        conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\working");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\PROJECTS\\vectorz-benchmark");
 */
 /*
@@ -30,7 +27,7 @@ public class AllLops {
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2-work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2-bench");/**/
 /*
-
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk\\commons-io-trunk");
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk-work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk-bench");
 */
@@ -63,7 +60,7 @@ public class AllLops {
                 @Override
                 public void process(CtLoop loop) {
                     if (loop.getBody() != null)
-                        selectIfMeetPreconditions(loop);
+                        select(loop);
                     i[0]++;
                 }
             });
@@ -73,6 +70,24 @@ public class AllLops {
             throw e;
         }
         System.out.println("Elements detected: " + i[0]);
+
+        /*
+        conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\vectorz-develop");
+        conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\working");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\PROJECTS\\vectorz-benchmark");
+        */
+
+        //gen.setTagglets(tagglets);
+
+                        /*
+                Tagglet t = new Tagglet(Tagglet.TaggletKind.BENCH_THIS,
+                        element.getPosition().getLine() - 1, element.getPosition().getColumn(),
+                        element.getPosition().getCompilationUnit().getMainType().getQualifiedName());
+                tagglets.add(t);
+                System.out.print(tagglets.size());
+
+                */
+
     }
 
 }

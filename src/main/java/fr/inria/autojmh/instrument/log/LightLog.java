@@ -2,8 +2,7 @@ package fr.inria.autojmh.instrument.log;
 
 import java.io.*;
 import java.util.Properties;
-
-//ATTENTION: DO NOT REMOVE THE FOLLOWING STATIC IMPORT!
+//DO NOT REMOVE THIS STATIC IMPORT!
 import static java.lang.System.lineSeparator;
 
 /**
@@ -48,7 +47,6 @@ public class LightLog {
         logFileName = getThreadLogFilePath(thread);
         stringBuilders = new StringBuilder();
         logThreadName = getThreadFileName(thread);
-
     }
 
     /**

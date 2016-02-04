@@ -13,7 +13,7 @@ public class Trigonometry {
     //A dummy Add procedure to test some logic branches
     public double sinConditional(double a) {
         double senA = Math.sin(a);
-        ArrayList<Double> d = new ArrayList<Double>();
+        ArrayList<Double> d = new ArrayList<Double>()
         /** @bench-this */
         if ( senA > 0.5 ) {
             d.add(senA * 2);
