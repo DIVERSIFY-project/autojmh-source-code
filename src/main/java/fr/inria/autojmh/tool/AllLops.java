@@ -59,8 +59,7 @@ public class AllLops {
             gen.setSelector(new SnippetSelector<CtLoop>() {
                 @Override
                 public void process(CtLoop loop) {
-                    if (loop.getBody() != null)
-                        select(loop);
+                    if (loop.getBody() != null) select(loop);
                     i[0]++;
                 }
             });

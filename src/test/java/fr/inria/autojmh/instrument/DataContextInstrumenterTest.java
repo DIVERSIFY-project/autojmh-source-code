@@ -5,7 +5,6 @@ import fr.inria.autojmh.selection.TaggedStatementDetector;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.selection.Tagglet;
 
-import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import static fr.inria.autojmh.selection.TaggletStatementDetectorTest.getTaggletsList;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DataContextInstrumenterTest {
 

@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators.reset;
 
-import fr.inria.autojmh.instrument.DataContextResolver;
+import fr.inria.autojmh.snippets.TypeAttributes;
 import spoon.reflect.code.CtVariableAccess;
 
 /**
@@ -16,14 +16,14 @@ public class ResetFactory {
     public ResetGenerator fetchGenerator(CtVariableAccess a) {
         if (a.getType().isPrimitive()) {
             return primitives;
-        } else if (DataContextResolver.isCollection(a.getType())) {
-            return primitiveCollection;
-        } else throw new UnsupportedOperationException();
+        } else {
+            if (new TypeAttributes(a.getType()).isCollection()) {
+                return primitiveCollection;
+            } else throw new UnsupportedOperationException();
+        }
     }
 
-
-
     public boolean canProvide(CtVariableAccess a) {
-        return a.getType().isPrimitive() || DataContextResolver.isCollection(a.getType());
+        return a.getType().isPrimitive() || new TypeAttributes(a.getType()).isCollection();
     }
 }

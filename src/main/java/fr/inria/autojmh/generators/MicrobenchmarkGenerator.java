@@ -1,7 +1,6 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.instrument.DataContextFileChooser;
-import fr.inria.autojmh.instrument.DataContextResolver;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
@@ -117,11 +116,12 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         if (extractedMethods == null) extractedMethods = new HashSet<>();
 
         for (CtInvocation inv : methods) {
+            /*
             if (BenchSnippet.isImplicitThiz(inv)) {
                 MicroSnippetExpression thiz = new MicroSnippetExpression();
                 thiz.setValue("THIZ");
                 inv.setTarget(thiz);
-            }
+            }*/
             //Find private static and private methods
             //There is no need to extract public methods since we can directly use them
             CtMethodImpl m = getInvocationMethod(inv);
@@ -226,7 +226,6 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
     }
 
     private String getDefaultReturn(BenchSnippet snippet) {
-
         //Check if the return is actually needed
         AllBranchesReturn branchesReturn = new AllBranchesReturn();
         if (branchesReturn.execute(snippet.getASTElement())) return null;
@@ -273,7 +272,6 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
                 return "return 0; ";
             case "java.lang.String":
                 return "return 0; ";
-
             case "byte":
                 return "return 0; ";
             case "boolean":

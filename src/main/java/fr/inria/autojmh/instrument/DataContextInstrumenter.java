@@ -2,6 +2,7 @@ package fr.inria.autojmh.instrument;
 
 
 import fr.inria.autojmh.instrument.log.*;
+import fr.inria.autojmh.snippets.Preconditions;
 import fr.inria.autojmh.selection.TaggedStatementDetector;
 import fr.inria.autojmh.selection.Tagglet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
@@ -22,6 +23,8 @@ import java.util.logging.Logger;
  */
 public class DataContextInstrumenter implements Configurable {
 
+    AJMHConfiguration ajmhConf;
+
     public static final String EXECUTION_OK = "Execution OK";
 
     private static Logger log = Logger.getLogger(DataContextInstrumenter.class.getCanonicalName());
@@ -40,8 +43,12 @@ public class DataContextInstrumenter implements Configurable {
      * Output path of the instrumented project
      */
     String outputPrj;
+
     private Detector<CtStatement> detector;
+
     private String executionResult;
+
+    private Preconditions preconditions;
 
     public void execute() throws Exception {
         Configuration confSrc = new Configuration(srcPath);
@@ -74,7 +81,6 @@ public class DataContextInstrumenter implements Configurable {
         } catch (Exception e) {
             executionResult = e.getMessage();
         }
-
     }
 
     @Override
@@ -82,6 +88,7 @@ public class DataContextInstrumenter implements Configurable {
         srcPath = configuration.getInputProjectSrcPath();
         prjPath = configuration.getInputProjectPath();
         outputPrj = configuration.getWorkingDir();
+        ajmhConf = configuration;
     }
 
     public void instrument(Map<Tagglet, CtStatement> matches) {

@@ -1,5 +1,7 @@
 package fr.inria.autojmh.tool;
 
+import fr.inria.autojmh.snippets.Preconditions;
+
 import java.io.*;
 import java.util.Properties;
 
@@ -9,6 +11,8 @@ import java.util.Properties;
  * Created by marodrig on 27/10/2015.
  */
 public class AJMHConfiguration {
+
+    private int methodExtractionDepth;
 
     /**
      * Path to the input project to benchmark
@@ -57,6 +61,7 @@ public class AJMHConfiguration {
 
 
     private static final String RUNTIME_CONTEXT = "log";
+    private Preconditions preconditions;
 
     /**
      * Get the path where the context data is stored
@@ -172,4 +177,21 @@ public class AJMHConfiguration {
         this.workingDir = workingDir;
     }
 
+    /**
+     * When extracting a method is possible that other methods are called within its body.
+     * These methods must be extracted as well and in turn can call other methods.
+     * This variable set the depth to which this process is recursively repeated.
+     */
+    public int getMethodExtractionDepth() {
+        return methodExtractionDepth;
+    }
+
+    public void setMethodExtractionDepth(int methodExtractionDepth) {
+        this.methodExtractionDepth = methodExtractionDepth;
+    }
+
+    public Preconditions getPreconditions() {
+        if ( preconditions == null ) preconditions = new Preconditions();
+        return preconditions;
+    }
 }

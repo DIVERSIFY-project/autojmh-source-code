@@ -4,6 +4,8 @@ import fr.inria.autojmh.instrument.log.Log;
 import fr.inria.autojmh.selection.BenchSnippetDetectionData;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
+import fr.inria.autojmh.tool.AJMHConfiguration;
+import fr.inria.autojmh.tool.Configurable;
 import fr.inria.diversify.syringe.detectors.DetectionData;
 import fr.inria.diversify.syringe.injectors.AbstractInjector;
 import org.apache.log4j.Logger;
@@ -14,7 +16,6 @@ import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtCodeSnippetStatementImpl;
 import spoon.support.reflect.code.CtStatementListImpl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,9 +26,11 @@ import java.util.List;
  * <p/>
  * Created by marodrig on 15/09/2015.
  */
-public class DataContextInjector extends AbstractInjector {
+public class DataContextInjector extends AbstractInjector implements Configurable {
 
     Logger log = Logger.getLogger(DataContextInjector.class);
+
+    private AJMHConfiguration conf;
 
     public DataContextInjector() {
         setInjectionTemplate(Log.class.getCanonicalName() + ".getLog().log%type%(%var%, \"%name%\", false);\n");
@@ -72,6 +75,9 @@ public class DataContextInjector extends AbstractInjector {
         if (data instanceof BenchSnippetDetectionData) {
             //Build the before injectors
             BenchSnippet input = ((BenchSnippetDetectionData) data).getSnippet();
+
+            //Reject snippet if it does not meet preconditions.
+            if ( !input.meetsPreconditions() ) return;
 
             //Obtain return statements to instrument them
             List<CtReturn> returns = element.getElements(new TypeFilter<CtReturn>(CtReturn.class));
@@ -128,5 +134,10 @@ public class DataContextInjector extends AbstractInjector {
                 log.warn("Cannot inject code at " + input.getCode());
             }
         }
+    }
+
+    @Override
+    public void configure(AJMHConfiguration configuration) {
+        conf = configuration;
     }
 }

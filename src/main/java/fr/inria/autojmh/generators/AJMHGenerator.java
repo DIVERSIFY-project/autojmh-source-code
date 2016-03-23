@@ -1,27 +1,20 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.instrument.DataContextInstrumenter;
-import fr.inria.autojmh.instrument.DataContextResolver;
 import fr.inria.autojmh.projectbuilders.Maven.MavenProjectBuilder;
 import fr.inria.autojmh.projectbuilders.ProjectFiles;
-import fr.inria.autojmh.selection.SnippetSelector;
-import fr.inria.autojmh.selection.SelectionFileWalker;
-import fr.inria.autojmh.selection.TaggedStatementDetector;
-import fr.inria.autojmh.selection.Tagglet;
+import fr.inria.autojmh.selection.*;
 import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.Preconditions;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import org.apache.log4j.Logger;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeSnippetStatement;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.code.CtVariableAccess;
-import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static fr.inria.autojmh.instrument.DataContextResolver.checkPreconditions;
 
 /**
  * Class that drives the whole generation instrument.
@@ -106,8 +99,9 @@ public class AJMHGenerator implements BenchmakGenerator {
 
             log.info("Removing non compliant snippets");
             List<BenchSnippet> complyingSnippets = new ArrayList<>();
+            Preconditions preconditions = new Preconditions();
             for (BenchSnippet snippet : snippets) {
-                if (checkPreconditions(snippet)) complyingSnippets.add(snippet);
+                if (snippet.meetsPreconditions()) complyingSnippets.add(snippet);
             }
             log.info("Total snippets: " + snippets.size());
             log.info("Snippet accepted: " + complyingSnippets.size());
@@ -140,8 +134,6 @@ public class AJMHGenerator implements BenchmakGenerator {
             log.fatal("Process failed");
             throw new RuntimeException(e);
         }
-
-
     }
 
 

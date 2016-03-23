@@ -10,12 +10,9 @@ import fr.inria.autojmh.generators.AJMHGenerator;
 public class Tool {
 
     public static void main(String[] args) throws Exception {
-        //System.out.println("");
-
         AJMHConfiguration configuration = AJMHConfiguration.fromArgs(args);
         AJMHGenerator generator = new AJMHGenerator(configuration);
         generator.generate();
-        //generator.report();
     }
 
 }

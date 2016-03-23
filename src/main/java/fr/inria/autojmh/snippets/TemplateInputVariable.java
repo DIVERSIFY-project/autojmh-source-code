@@ -1,6 +1,5 @@
 package fr.inria.autojmh.snippets;
 
-import fr.inria.autojmh.instrument.DataContextResolver;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;
@@ -67,8 +66,10 @@ public class TemplateInputVariable {
 
 
     private void doInitialize(BenchSnippet parent, CtTypeReference typeRef) {
-        if ( typeRef instanceof CtArrayTypeReference) {
 
+        TypeAttributes refAttr = new TypeAttributes(typeRef);
+
+        if ( typeRef instanceof CtArrayTypeReference) {
             CtArrayTypeReference ref = (CtArrayTypeReference) typeRef;
 
             int arrayDimentions = 1;
@@ -76,9 +77,10 @@ public class TemplateInputVariable {
                 ref = (CtArrayTypeReference) ref.getComponentType();
                 arrayDimentions++;
             }
+
             String methodName = "Array" + arrayDimentions;
             if (arrayDimentions == 1 && !ref.getComponentType().isPrimitive()
-                    && DataContextResolver.isSerializable(ref.getComponentType()))
+                    && new TypeAttributes(ref.getComponentType()).isSerializable())
                 //So far 1 array dimention of serializables is supported
                 methodName += "Serializable";
             else methodName += ref.getComponentType().getSimpleName();
@@ -86,16 +88,15 @@ public class TemplateInputVariable {
             logMethodName = methodName;
             this.setIsArray(true);
             this.setIsCollection(false);
-        } else if (DataContextResolver.isCollection(typeRef)) {
-
-            CtTypeReference ref = typeRef;
-            ref = ref.getActualTypeArguments().get(0);
-            this.setSerializable(DataContextResolver.isSerializable(ref));
+        } else if (refAttr.isCollection()) {
+            this.setSerializable(refAttr.isSerializable());
             if (isSerializable) {
                 this.setLoadMethodName("Serializable" + typeRef.getSimpleName());
                 logMethodName = "SerializableCollection";
             }
             else {
+                CtTypeReference ref = typeRef;
+                ref = ref.getActualTypeArguments().get(0);
                 setLoadMethodName(ref.getSimpleName() + typeRef.getSimpleName());
                 //setLoadMethodName(ref.getSimpleName() + "Collection");
                 logMethodName = ref.getSimpleName() + "Collection";
@@ -106,8 +107,7 @@ public class TemplateInputVariable {
         } else {
             this.setIsArray(false);
             this.setIsCollection(false);
-            if (DataContextResolver.isSerializable(typeRef))
-                this.setLoadMethodName("Serializable");
+            if (refAttr.isSerializable()) this.setLoadMethodName("Serializable");
             else this.setLoadMethodName(typeRef.toString());
             logMethodName = getLoadMethodName();
         }
@@ -115,9 +115,7 @@ public class TemplateInputVariable {
         SourcePosition pos = parent.getASTElement().getPosition();
         loggingSignature = pos.getCompilationUnit().getMainType().getQualifiedName().replace(".", "-")
                 + "-" + pos.getLine() + "-" + getVariableName();
-
-        if ( typeRef.isPrimitive() )
-            packageQualifiedName = "java.lang." + typeRef.getQualifiedName();
+        if ( typeRef.isPrimitive() ) packageQualifiedName = "java.lang." + typeRef.getQualifiedName();
         else packageQualifiedName = typeRef.getQualifiedName();
     }
 
