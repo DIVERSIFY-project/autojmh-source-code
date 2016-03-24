@@ -1,5 +1,6 @@
-package fr.inria.autojmh.snippets;
+package fr.inria.autojmh.snippets.modelattrib;
 
+import fr.inria.autojmh.snippets.Preconditions;
 import org.apache.log4j.Logger;
 import spoon.reflect.reference.CtTypeReference;
 

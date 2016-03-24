@@ -1,5 +1,6 @@
 package fr.inria.autojmh.snippets;
 
+import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;

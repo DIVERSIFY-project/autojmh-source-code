@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators.reset;
 
-import fr.inria.autojmh.snippets.TypeAttributes;
+import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
 import spoon.reflect.code.CtVariableAccess;
 
 /**

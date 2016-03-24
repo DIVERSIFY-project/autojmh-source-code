@@ -12,6 +12,7 @@ import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeSnippetStatement;
 import spoon.reflect.code.CtStatement;
 
+import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -73,11 +74,29 @@ public class AJMHGenerator implements BenchmakGenerator {
         return this.snippets;
     }
 
+    private boolean checkInputPath() {
+        if (!(new File(conf.getInputProjectPath()).exists())) {
+            log.fatal("The input path " + conf.getInputProjectPath() + " can't be accessed.");
+            return false;
+        }
+        if ( !(new File(conf.getInputProjectPath() + conf.getInputProjectSrcPath()).exists()) ) {
+            log.fatal("The input source path " + conf.getInputProjectSrcPath() + " can't be accessed.");
+            return false;
+        }
+        if ( !(new File(conf.getInputProjectPath() + conf.getInputProjectTestPath()).exists()) ) {
+            log.fatal("The input test path " + conf.getInputProjectTestPath() + " can't be accessed.");
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Generates the benchmark suite
      */
     public void generate() {
         try {
+            if (!checkInputPath()) return;
+
             //Clean working and result's dir
             log.info("Cleaning working dirs");
             cleanWorkingDir();
@@ -116,19 +135,27 @@ public class AJMHGenerator implements BenchmakGenerator {
             cleanInstrumentation(snippets);
 
             //Finally generate the benchmarks
-
             runGenerators(new MainClassGenerator(), snippets);
             log.info("Main file generated");
-            MicrobenchmarkGenerator g = new MicrobenchmarkGenerator();
-            runGenerators(g, snippets);
 
-            log.info("Microbenchmarks generated: " + g.getGeneratedCount());
-
-            log.info("Microbenchmarks generated");
             runGenerators(new LoaderGenerator(), snippets);
             log.info("Loader file generated");
+
             runGenerators(new TestForMicrobenchmarkGenerator(), snippets);
             log.info("Unit tests file generated");
+
+            //After the generation of the microbenchmark, the snippet changes its AST
+            //That's why they are the last thing to be generated
+            MicrobenchmarkGenerator g = new MicrobenchmarkGenerator();
+            runGenerators(g, snippets);
+            log.info("Microbenchmarks generated");
+
+            log.info("----------- STATS: ---------------");
+            log.info("Microbenchmarks generated: " + g.getGeneratedCount());
+            log.info("Rejection causes:");
+            for ( Map.Entry<String, Integer> k : conf.getPreconditions().getRejectionCause().entrySet() )
+                log.info(" + " + k.getKey() + ": " + k.getValue());
+            log.info("----------------------------------");
 
         } catch (Exception e) {
             log.fatal("Process failed");
@@ -137,6 +164,9 @@ public class AJMHGenerator implements BenchmakGenerator {
     }
 
 
+    /**
+     * Cleans the instrumentation out of the AST of the project
+     */
     private void cleanInstrumentation(List<BenchSnippet> snippets) {
         for (BenchSnippet s : snippets) {
             CtStatement st = s.getASTElement();
@@ -151,27 +181,6 @@ public class AJMHGenerator implements BenchmakGenerator {
                             block.removeStatement(blockSt);
                     } else k++;
                 }
-
-
-                /*
-                int index = block.getStatements().indexOf(st) - 1;
-                try {
-                    while (index >= 0 && block.getStatements().get(index) instanceof CtCodeSnippetStatement) {
-                        block.removeStatement(block.getStatement(index));
-                        index--;
-                    }
-                } catch (IndexOutOfBoundsException ex) {
-                    log.warn("Unexpected exception");
-                }
-                try {
-                    index += 2;
-                    while (index < block.getStatements().size() &&
-                            block.getStatements().get(index) instanceof CtCodeSnippetStatement) {
-                        block.removeStatement(block.getStatement(index));
-                    }
-                } catch (IndexOutOfBoundsException ex) {
-                    log.warn("Unexpected exception");
-                }*/
             }
         }
     }
@@ -274,12 +283,12 @@ public class AJMHGenerator implements BenchmakGenerator {
         return null;
     }
 
-
-    public SnippetSelector getCustomDetector() {
-        return customDetector;
-    }
-
     public void setSelector(SnippetSelector customDetector) {
         this.customDetector = customDetector;
+        this.customDetector.configure(conf);
+    }
+
+    public SnippetSelector getSelector() {
+        return customDetector;
     }
 }

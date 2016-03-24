@@ -17,11 +17,11 @@ public class AllLops {
                 new File(AllLops.class.getClassLoader().getResource("log4j.properties").toURI().getPath()).getAbsolutePath());
 
         AJMHConfiguration conf = new AJMHConfiguration();
-/*
-        conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\vectorz-develop");
-        conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\working");
-        conf.setGenerationOutputPath("C:\\MarcelStuff\\PROJECTS\\vectorz-benchmark");
-*/
+
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-develop");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-benchmark");
+/**/
 /*
         conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2");
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2-work");
@@ -47,13 +47,14 @@ public class AllLops {
         conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\PHD\\benchsource");
         conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\benchsource_work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\PROJECTS\\benchsource-benchmark");
-*/
+
         conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-cli-trunk");
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-cli-trunk_work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-cli-trunk-benchmark");
-
+        */
         final int[] i = {0};
         AJMHGenerator gen = new AJMHGenerator();
+        conf.setMethodExtractionDepth(5);
         gen.configure(conf);
         try {
             gen.setSelector(new SnippetSelector<CtLoop>() {

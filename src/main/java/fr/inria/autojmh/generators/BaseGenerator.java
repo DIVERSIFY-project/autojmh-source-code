@@ -19,8 +19,8 @@ public abstract class BaseGenerator implements BenchmakGenerator {
 
     protected static final String GRACEFULLY_BENCHMARK = "GRACEFULLY";
     protected static final String ORIGINAL_BENCHMARK = "ORIGINAL";
-    protected static final String PAD_8 = "        ";
-    protected static final String PAD_4 = "    ";
+    public static final String PAD_8 = "        ";
+    public static final String PAD_4 = "    ";
 
     private static Logger log = Logger.getLogger(BaseGenerator.class);
 

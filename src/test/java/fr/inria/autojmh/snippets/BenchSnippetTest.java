@@ -70,11 +70,15 @@ public class BenchSnippetTest {
         //DataContextResolver resolver = new DataContextResolver();
         //resolver.resolve(benchs.get(0));
 
-        List<TemplateInputVariable> wraps = benchs.get(1).getTemplateAccessesWrappers();
+        //We don't know the order in which they came out, some times is 0 some others is 1
+        List<TemplateInputVariable> wraps = benchs.get(0).getTemplateAccessesWrappers();
+        if ( !wraps.get(0).getVariableName().equals("a") ) wraps = benchs.get(1).getTemplateAccessesWrappers();
+
         assertEquals(1, wraps.size());
         assertEquals("a", wraps.get(0).getVariableName());
         assertTrue(wraps.get(0).isInitialized());
         assertFalse(wraps.get(0).getIsArray());
+
     }
 
     /**
