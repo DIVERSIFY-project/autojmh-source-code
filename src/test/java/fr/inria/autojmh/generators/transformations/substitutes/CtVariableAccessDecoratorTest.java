@@ -1,7 +1,12 @@
 package fr.inria.autojmh.generators.transformations.substitutes;
 
+import fr.inria.autojmh.snippets.BenchSnippet;
 import org.junit.Test;
+import spoon.reflect.code.CtReturn;
 
+import java.util.List;
+
+import static fr.inria.autojmh.ElementProvider.loadSnippets;
 import static org.junit.Assert.*;
 
 /**
@@ -11,6 +16,7 @@ public class CtVariableAccessDecoratorTest {
 
     @Test
     public void testToString() throws Exception {
-        fail();
+        //
+        List<BenchSnippet> list = loadSnippets(this, "callTheCallDontPass", CtReturn.class);
     }
 }

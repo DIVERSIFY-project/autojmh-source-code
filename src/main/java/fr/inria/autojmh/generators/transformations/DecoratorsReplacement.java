@@ -18,7 +18,7 @@ import java.util.Stack;
 import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.visibility;
 
 /**
- * Extract private static method out of an statement and copy its body to the microbenchmark
+ * Extract private static method out of an statement and copy its body to the transformations
  */
 public class DecoratorsReplacement extends AbstractTransformation implements Configurable {
 
@@ -32,14 +32,14 @@ public class DecoratorsReplacement extends AbstractTransformation implements Con
     @Override
     public void transform(BenchSnippet snippet) {
         transformed = snippet.getASTElement();
-        replace(transformed, deep);
+        replace(transformed, deep, new HashSet<CtInvocation>());
     }
 
     /**
      * Replaces recursively all invocations in the statement in the snippet with an invocation stub with a pretty print
      * It goes inside the method bodies when it can and recursively replaces invocations
      */
-    private void replace(CtElement st, int deep) {
+    private void replace(CtElement st, int deep, HashSet<CtInvocation> visited) {
         if (deep <= 0) return;
         deep--;
 
@@ -58,8 +58,9 @@ public class DecoratorsReplacement extends AbstractTransformation implements Con
             if (!(inv instanceof CtInvocationDecorator) && visibility(inv) != ModifierKind.PUBLIC) {
                 CtInvocationDecorator invDeco = new CtInvocationDecorator(inv);
                 inv.replace(invDeco);
+                visited.add(inv);
                 //Find body of the element
-                replace(inv.getExecutable().getDeclaration().getBody(), deep);
+                replace(inv.getExecutable().getDeclaration().getBody(), deep, visited);
             }
         }
     }

@@ -13,7 +13,6 @@ import spoon.reflect.reference.CtReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.CtVisitor;
-import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import spoon.reflect.visitor.Filter;
 import spoon.reflect.visitor.ReferenceFilter;
 import spoon.support.reflect.code.CtVariableAccessImpl;

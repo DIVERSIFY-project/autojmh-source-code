@@ -19,8 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static fr.inria.autojmh.snippets.TemplateInputVariable.getCompilableName;
-
 /**
  * Created by marodrig on 28/09/2015.
  */

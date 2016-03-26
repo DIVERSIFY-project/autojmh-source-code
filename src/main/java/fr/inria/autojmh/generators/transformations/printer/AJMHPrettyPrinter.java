@@ -1,5 +1,6 @@
 package fr.inria.autojmh.generators.transformations.printer;
 
+import fr.inria.autojmh.generators.transformations.substitutes.CtInvocationDecorator;
 import spoon.Launcher;
 import spoon.compiler.Environment;
 import spoon.reflect.code.CtExpression;
@@ -25,6 +26,8 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
 
     @Override
     public <T> void visitCtInvocation(CtInvocation<T> invocation) {
+        if (!(invocation instanceof CtInvocationDecorator)) super.visitCtInvocation(invocation);
+
         enterCtStatement(invocation);
         enterCtExpression(invocation);
 //BCUTAG ???
@@ -65,6 +68,8 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
                 target = invocation.getTarget().toString();
             } else if (invocation.getGenericTypes() != null && invocation.getGenericTypes().size() > 0) {
                 target = "this";
+            } else {
+                target = "THIZ";
             }
 
             boolean removeLastChar = false;
@@ -89,17 +94,13 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
             write(invocation.getExecutable().getSimpleName());
         }
         write("(");
-        if (target != null) {
-            write(target);
-            write(", ");
-        }
+        if (target != null) write(target);
+
         boolean remove = false;
         for (CtExpression<?> e : invocation.getArguments()) {
-            scan(e);
             write(", ");
-            remove = true;
+            scan(e);
         }
-        if (remove) removeLastChar();
         write(")");
         exitCtExpression(invocation);
     }

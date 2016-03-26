@@ -11,4 +11,6 @@ import java.io.Serializable;
 */
 public interface SerializableInterface extends Serializable {
 
+    void doSomething();
+
 }

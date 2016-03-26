@@ -1,74 +1,63 @@
 package fr.inria.autojmh.snippets;
 
-import fr.inria.autojmh.selection.SnippetSelector;
+import fr.inria.autojmh.ElementProvider;
 import fr.inria.autojmh.selection.TaggedStatementDetector;
-import fr.inria.diversify.syringe.SpoonMetaFactory;
 import org.junit.Test;
-import spoon.processing.ProcessingManager;
-import spoon.reflect.code.CtLoop;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.factory.Factory;
-import spoon.support.QueueProcessingManager;
+import spoon.reflect.code.CtIf;
+import spoon.reflect.code.CtStatement;
 
 import java.util.List;
-
 import static fr.inria.autojmh.selection.TaggletStatementDetectorTest.*;
 import static junit.framework.Assert.*;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BenchSnippetTest {
 
     @Test
+    public void testMeetsPreconditions() throws Exception {
+        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        assertTrue(snippets.get(0).meetsPreconditions());
+
+        snippets = loadSnippets("arrayOfNonSerializables");
+        assertFalse(snippets.get(0).meetsPreconditions());
+    }
+
+    @Test
     public void testGetMicrobenchmarkClassName() throws Exception {
-        List<BenchSnippet> snippets = loopSnippets("arrayOfSerializables");
+        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertTrue(snippets.get(0).getMicrobenchmarkClassName().startsWith("fr_inria_testproject_context_DataContextPlayGround"));
 
     }
 
     @Test
     public void testGetPosition() throws Exception {
-        List<BenchSnippet> snippets = loopSnippets("arrayOfSerializables");
+        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertTrue(snippets.get(0).getPosition().contains(":"));
         assertTrue(snippets.get(0).getPosition().startsWith("fr.inria.testproject.context"));
     }
 
-/*
     @Test
     public void testGetBenchMethodReturnType() throws Exception {
-        fail();
-    }
+        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        assertEquals("void", snippets.get(0).getBenchMethodReturnType());
 
-    @Test
-    public void testGetTemplateAccessesWrappers() throws Exception {
-        fail();
+        snippets = ElementProvider.loadSnippets(this, "anIntMethod", CtIf.class);
+        assertEquals("int", snippets.get(0).getBenchMethodReturnType());
     }
 
     @Test
     public void testGetAccesses() throws Exception {
-        fail();
+        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        assertEquals(4, snippets.get(0).getAccesses().size());
     }
 
     @Test
-    public void testGetInitialized() throws Exception {
-        fail();
-    }
-
-    @Test
-    public void testGetLineNumber() throws Exception {
-        fail();
-    }
-*/
-
-    @Test
-    public void testExtractContext() throws Exception {
+    public void testGetTemplateAccessesWrappers() throws Exception {
         //Get some BenchSnippets
         TaggedStatementDetector p = process(
                 this.getClass().getResource("/input_sources/java").toURI().getPath(), getTaggletsList(CLASS_NAME));
         List<BenchSnippet> benchs = p.getSnippets();
-
-        //Resolve inputs to some of them
-        //DataContextResolver resolver = new DataContextResolver();
-        //resolver.resolve(benchs.get(0));
 
         //We don't know the order in which they came out, some times is 0 some others is 1
         List<TemplateInputVariable> wraps = benchs.get(0).getTemplateAccessesWrappers();
@@ -82,61 +71,30 @@ public class BenchSnippetTest {
     }
 
     /**
-     * Selects from the DataContextPlayGround class located in the resources of the test,
-     * the variables of the snippets in the method passed as parameter
-     *
-     * @param method Method passed as parameter
-     * @return
-     * @throws Exception
-     */
-    private List<BenchSnippet> loopSnippets(final String method) throws Exception {
-        //Process the two files
-        Factory factory = new SpoonMetaFactory().buildNewFactory(
-                this.getClass().getResource(
-                        "/testproject/src/main/java/fr/inria/testproject/context").toURI().getPath(), 5);
-        ProcessingManager pm = new QueueProcessingManager(factory);
-        SnippetSelector<CtLoop> selector = new SnippetSelector<CtLoop>() {
-            @Override
-            public void process(CtLoop element) {
-                String name = element.getPosition().getCompilationUnit().getMainType().getSimpleName();
-                CtMethod m = element.getParent(CtMethod.class);
-                if (m != null && name.equals("DataContextPlayGround") && m.getSimpleName().equals(method)) {
-                    select(element);
-                }
-            }
-        };
-        pm.addProcessor(selector);
-        pm.process();
-        return selector.getSnippets();
-    }
-
-    /**
      * Test the proper extraction of an array of objects.
      */
     @Test
     public void testArrayOfObjects() throws Exception {
-        List<BenchSnippet> snippets = loopSnippets("arrayOfObjects");
-        //DataContextResolver r = new DataContextResolver();
-        //r.resolve(snippets.get(0));
-        assertEquals(1, snippets.get(0).getInitialized().size());
+        List<BenchSnippet> snippets = loadSnippets("arrayOfObjects");
+        assertEquals(2, snippets.get(0).getInitialized().size());
+    }
+
+    private List<BenchSnippet> loadSnippets(String arrayOfObjects) throws Exception {
+        return ElementProvider.loadSnippets(this, arrayOfObjects);
     }
 
     /**
      * Test the proper extraction of an array of serializable.
      */
     @Test
-    public void testArrayOfSerializable() throws Exception {
-        List<BenchSnippet> snippets = loopSnippets("arrayOfSerializables");
-        //DataContextResolver r = new DataContextResolver();
-        //r.resolve(snippets.get(0));
+    public void testGetInitializedArrayOf_NON_Serializables() throws Exception {
+        List<BenchSnippet> snippets = loadSnippets("arrayOfNonSerializables");
         assertEquals(2, snippets.get(0).getInitialized().size());
     }
 
     @Test
-    public void testArrayOfNonSerializable() throws Exception {
-        List<BenchSnippet> snippets = loopSnippets("arrayOfNonSerializables");
-        //DataContextResolver r = new DataContextResolver();
-        //r.resolve(snippets.get(0));
-        assertEquals(1, snippets.get(0).getInitialized().size());
+    public void testGetInitializedArrayOfSerializables() throws Exception {
+        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        assertEquals(2, snippets.get(0).getInitialized().size());
     }
 }

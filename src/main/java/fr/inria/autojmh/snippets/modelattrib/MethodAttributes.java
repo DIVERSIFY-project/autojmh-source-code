@@ -51,7 +51,7 @@ public class MethodAttributes {
         ModifierKind m = ModifierKind.PUBLIC;
 
         CtExecutableReference ex;
-        if ( e instanceof CtInvocationDecorator) ex = ((CtInvocation)e).getExecutable();
+        if ( e instanceof CtInvocation) ex = ((CtInvocation)e).getExecutable();
         else if ( e instanceof CtNewClass )ex = ((CtNewClass)e).getExecutable();
         else {
             try {

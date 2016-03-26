@@ -47,7 +47,7 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
 
     @Override
     public void processingDone() {
-        for (BenchSnippet s : snippets) {
+        for (BenchSnippet s : getSnippets()) {
             BenchSnippetDetectionData data = new BenchSnippetDetectionData();
             data.setSnippet(s);
             notify(SNIPPET_DETECTED, s.getASTElement(), data);

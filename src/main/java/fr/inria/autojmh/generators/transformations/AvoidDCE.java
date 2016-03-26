@@ -3,7 +3,7 @@ package fr.inria.autojmh.generators.transformations;
 import fr.inria.autojmh.snippets.BenchSnippet;
 
 /**
- * Extract private static method out of an statement and copy its body to the microbenchmark
+ * Extract private static method out of an statement and copy its body to the transformations
  *
  */
 public class AvoidDCE extends AbstractTransformation {

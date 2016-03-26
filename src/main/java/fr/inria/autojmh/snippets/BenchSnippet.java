@@ -167,7 +167,7 @@ public class BenchSnippet implements Configurable {
 
 
     /**
-     * Some extra information is needed per variable inside the snippet to generate the microbenchmark. This
+     * Some extra information is needed per variable inside the snippet to generate the transformations. This
      * information is wrapped in an extra
      * <p>
      * Build the set of template wrappers for the input variables of the loop
@@ -315,7 +315,7 @@ public class BenchSnippet implements Configurable {
             vars.run(ControlFlowBuilder.firstNode(g, statement));
             initialized = new HashSet<>();
             for (CtVariableAccess a : access) {
-                if (isInitialized(a, statement, vars) && getPreconditions().checkTypeRef(a.getType()))
+                if (isInitialized(a, statement, vars))
                     initialized.add(a);
             }
         } catch (NotFoundException e) {
@@ -401,7 +401,6 @@ public class BenchSnippet implements Configurable {
 
     /**
      * Indicate whether 'a' is a variable declared inside the statement being benchmarked
-     *
      */
     private boolean isLocalVariable(CtVariableAccess a, List<CtLocalVariable> localVars) {
         for (CtLocalVariable lv : localVars) {
@@ -426,7 +425,7 @@ public class BenchSnippet implements Configurable {
 
 
     public Preconditions getPreconditions() {
-        if ( preconditions == null ) preconditions = new Preconditions();
+        if (preconditions == null) preconditions = new Preconditions();
         return preconditions;
     }
 }

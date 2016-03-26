@@ -2,9 +2,11 @@ package fr.inria.autojmh.snippets.modelattrib;
 
 import fr.inria.autojmh.snippets.Preconditions;
 import org.apache.log4j.Logger;
+import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.HashSet;
+
 import java.util.Set;
 
 /**
@@ -17,6 +19,7 @@ public class TypeAttributes {
     private static Logger log = Logger.getLogger(Preconditions.class);
 
     public CtTypeReference ref;
+
 
     private Boolean isClassPrimitive;
     private Boolean isCollection;
@@ -55,6 +58,7 @@ public class TypeAttributes {
      */
     private boolean isCollection(CtTypeReference ref) {
         try {
+            if ( ref instanceof CtArrayTypeReference) return true;
             Set<CtTypeReference> refs = ref.getSuperInterfaces();
             if (refs == null) return false;
             for (CtTypeReference r : refs)

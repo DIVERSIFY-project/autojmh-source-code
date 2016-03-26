@@ -1,6 +1,5 @@
 package fr.inria.autojmh.generators.transformations;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
 import spoon.reflect.code.CtStatement;
 
 /**

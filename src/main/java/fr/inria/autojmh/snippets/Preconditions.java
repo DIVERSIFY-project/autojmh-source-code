@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * A class that holds the code to enforce the preconditions needed for a snippet in order to be selected for an
- * automatic microbenchmark
+ * automatic transformations
  * <p>
  * Created by marodrig on 22/03/2016.
  */
@@ -85,14 +85,14 @@ public class Preconditions implements Configurable {
     }
 
     /**
-     * Indicate whether we can extract the segment into a microbenchmark or not.
+     * Indicate whether we can extract the segment into a transformations or not.
      * An snippet must meet certain preconditions.
      */
     public boolean checkSnippet(BenchSnippet snippet) {
         int depth = conf == null ? 5 : conf.getMethodExtractionDepth();
         if (snippet.getASTElement() == null) return incCause(UNEXPECTED_ERR);
         if (!allVariablesAreSupported(snippet)) return incCause(VARS_UNSUPPORTED);
-        if (containsUnsupportedDynamicInvocations(snippet.getASTElement(), depth))
+        if (containsUnsupportedDynamicInvocations(snippet.getASTElement(), depth, new HashSet<CtInvocation>()))
             return incCause(DYN_INV_UNSUPPORTED);
         return true;
     }
@@ -164,7 +164,7 @@ public class Preconditions implements Configurable {
      * @return True if the method contains non static invocations
      */
 
-    private boolean containsUnsupportedDynamicInvocations(CtElement element, int levels) {
+    private boolean containsUnsupportedDynamicInvocations(CtElement element, int levels, HashSet<CtInvocation> visited) {
         if (levels <= 0) return !incCause(LEVELS_TOO_DEEP); //ALWAYS EQUAL TRUE
         levels--;
 
@@ -186,7 +186,9 @@ public class Preconditions implements Configurable {
 
         for (CtInvocation inv : invocations) {
             //Static methods are supported whether they are private or not
-            if (inv.getExecutable().isStatic()) continue;
+            //Do not visite twice a methdo, we can fall into an recursive infinite loop
+            if (visited.contains(inv) || inv.getExecutable().isStatic()) continue;
+            visited.add(inv);
 
             //Finds whether is a public dynamic method
             boolean isPublicDynamic = false;
@@ -223,7 +225,7 @@ public class Preconditions implements Configurable {
                 //unsuported variables inside
                 try {
                     element = inv.getExecutable().getDeclaration().getBody();
-                    if (containsUnsupportedDynamicInvocations(element, levels - 1)) return true;
+                    if (containsUnsupportedDynamicInvocations(element, levels - 1, visited)) return true;
                 } catch (Exception ex) {
                     //If we manage to even find their bodies... :P
                     log.warn("Unable to find body of invocation " + inv.toString() + " contains unsupported methods");

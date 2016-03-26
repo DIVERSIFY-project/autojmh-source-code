@@ -12,7 +12,6 @@ import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeSnippetStatement;
 import spoon.reflect.code.CtStatement;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -144,7 +143,7 @@ public class AJMHGenerator implements BenchmakGenerator {
             runGenerators(new TestForMicrobenchmarkGenerator(), snippets);
             log.info("Unit tests file generated");
 
-            //After the generation of the microbenchmark, the snippet changes its AST
+            //After the generation of the transformations, the snippet changes its AST
             //That's why they are the last thing to be generated
             MicrobenchmarkGenerator g = new MicrobenchmarkGenerator();
             runGenerators(g, snippets);

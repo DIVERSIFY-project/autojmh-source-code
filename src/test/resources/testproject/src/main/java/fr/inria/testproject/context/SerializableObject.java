@@ -18,4 +18,8 @@ public class SerializableObject implements SerializableInterface {
     public void setValues(int values) {
         this.values = values;
     }
+
+    public void doSomething() {
+        values = 0;
+    }
 }
