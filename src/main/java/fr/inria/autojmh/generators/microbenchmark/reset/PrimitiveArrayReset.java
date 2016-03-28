@@ -1,8 +1,6 @@
-package fr.inria.autojmh.generators.reset;
+package fr.inria.autojmh.generators.microbenchmark.reset;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.util.ArrayList;
 
 /**
  * Generates the reset code for a collection of primitives

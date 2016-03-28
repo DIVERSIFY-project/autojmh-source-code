@@ -1,6 +1,6 @@
-package fr.inria.autojmh.generators.transformations.printer;
+package fr.inria.autojmh.generators.printer;
 
-import fr.inria.autojmh.generators.transformations.substitutes.CtInvocationDecorator;
+import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtInvocationDecorator;
 import spoon.Launcher;
 import spoon.compiler.Environment;
 import spoon.reflect.code.CtExpression;
@@ -24,9 +24,14 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
     }
 
 
+
+
     @Override
     public <T> void visitCtInvocation(CtInvocation<T> invocation) {
-        if (!(invocation instanceof CtInvocationDecorator)) super.visitCtInvocation(invocation);
+        if (!(invocation instanceof CtInvocationDecorator)) {
+            super.visitCtInvocation(invocation);
+            return;
+        }
 
         enterCtStatement(invocation);
         enterCtExpression(invocation);

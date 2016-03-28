@@ -90,8 +90,8 @@ public class TemplateInputVariable {
             this.setIsArray(true);
             this.setIsCollection(false);
         } else if (refAttr.isCollection()) {
-            this.setSerializable(refAttr.isSerializable());
-            if (isSerializable) {
+            //this.setSerializable(refAttr.isSerializableCollection());
+            if (refAttr.isSerializableCollection()) {
                 this.setLoadMethodName("Serializable" + typeRef.getSimpleName());
                 logMethodName = "SerializableCollection";
             }
@@ -102,6 +102,7 @@ public class TemplateInputVariable {
                 //setLoadMethodName(ref.getSimpleName() + "Collection");
                 logMethodName = ref.getSimpleName() + "Collection";
             }
+            this.setSerializable(refAttr.isSerializable());
             this.setIsCollection(true);
             this.setIsArray(false);
 

@@ -81,8 +81,6 @@ public abstract class BaseGenerator implements BenchmakGenerator {
         this.writeToFile = writeToFile;
     }
 
-
-
     /**
      * Initializes the benchmark generator
      *

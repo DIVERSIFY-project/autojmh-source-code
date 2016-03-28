@@ -1,4 +1,4 @@
-package fr.inria.autojmh.generators.reset;
+package fr.inria.autojmh.generators.microbenchmark.reset;
 
 /**
  * Created by marodrig on 02/02/2016.

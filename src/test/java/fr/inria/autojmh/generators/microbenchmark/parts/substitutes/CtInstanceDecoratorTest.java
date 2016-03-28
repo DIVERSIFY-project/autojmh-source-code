@@ -1,7 +1,7 @@
-package fr.inria.autojmh.generators.transformations.substitutes;
+package fr.inria.autojmh.generators.microbenchmark.parts.substitutes;
 
-import fr.inria.autojmh.generators.transformations.DecoratorsReplacement;
-import fr.inria.autojmh.generators.transformations.printer.AJMHPrettyPrinter;
+import fr.inria.autojmh.generators.microbenchmark.parts.SnippetCode;
+import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import org.junit.Test;
 import spoon.reflect.code.CtIf;
@@ -21,21 +21,17 @@ public class CtInstanceDecoratorTest {
     @Test
     public void testToString() throws Exception {
         List<BenchSnippet> list = loadSnippets(this, "callInvocations", CtIf.class);
-        DecoratorsReplacement replacement = new DecoratorsReplacement();
-        replacement.transform(list.get(0));
+        SnippetCode replacement = new SnippetCode();
+        replacement.generate(list.get(0));
         List<CtInvocation> invs = list.get(0).getASTElement().getElements(
                 new TypeFilter<CtInvocation>(CtInvocation.class));
         assertEquals(3, invs.size());
         for ( CtInvocation inv : invs ) {
-            System.out.print(inv.toString());
             assertTrue(inv.toString().contains(inv.getExecutable().getSimpleName() + "(THIZ"));
             assertFalse(inv.toString().contains(", )"));
+            //Private methods should be printed method(THIZ)
+            assertFalse(inv.toString().contains("callPrivate()"));
+            assertFalse(inv.toString().contains("callProtected()"));
         }
-
-        AJMHPrettyPrinter printer = new AJMHPrettyPrinter(list.get(0).getASTElement().getFactory().getEnvironment());
-        printer.scan(list.get(0).getASTElement());
-        String ppPrint = printer.toString();
-        assertTrue(ppPrint.contains("callPrivate(THIZ)"));
-        assertTrue(ppPrint.contains("callProtected(THIZ)"));
     }
 }

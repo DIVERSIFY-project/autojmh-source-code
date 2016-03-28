@@ -135,8 +135,7 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
                 logger.warning("Cannot resolve context for " + s.getPosition());
             else {
                 snippets.add(s);
-                BenchSnippetDetectionData data = new BenchSnippetDetectionData();
-                data.setSnippet(s);
+                BenchSnippetDetectionData data = new BenchSnippetDetectionData(s);
                 notify(SNIPPET_DETECTED, s.getASTElement(), data);
             }
         }

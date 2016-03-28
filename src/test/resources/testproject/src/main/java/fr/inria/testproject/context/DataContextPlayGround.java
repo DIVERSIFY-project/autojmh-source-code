@@ -8,7 +8,7 @@ import java.util.List;
  * A class to test some coverage. In some method an "explosive" line is introduced
  * which will not be tested.
  */
-public class DataContextPlayGround {
+public abstract class DataContextPlayGround {
 
     int field1;
 
@@ -127,5 +127,61 @@ public class DataContextPlayGround {
             //callPublic();
         } else callPublic();
     }
+
+    protected abstract void protectedAbsctractMethod();
+
+    public void callProtectedAbstractMethod( boolean bb ) {
+        if ( bb ) {
+            callPrivate();
+            callProtected();
+            //callPublic();
+        } else protectedAbsctractMethod();
+    }
+
+    public int callPublicAbstractMethod(AbstractClass ac) {
+        return ac.abstractMethod();
+    }
     //------------------------ DecoratorTransoformation ATTRIBUTES --------------------------
+
+
+    //------------------------ INJECTORS --------------------------
+    //A dummy procedure to test the instrumentation of collection of serializabes
+    public int collectionOfSerializables(List<SerializableObject> seris) {
+        int result = 0;
+        for (int i = 0; i < seris.size(); i++) {
+            if (seris.get(i) != null) result++;
+        }
+        return result;
+    }
+
+    //A dummy procedure to test the instrumentation of class primitives of serializabes
+    public int collectionOfClassPrimitives(List<Double> seris) {
+        int result = 0;
+        for (int i = 0; i < seris.size(); i++) {
+            if (seris.get(i) != null) result++;
+        }
+        return result;
+    }
+
+    //A dummy Add procedure to test injection in a return whose parent is not a block
+    public int singleReturn(int i, SerializableObject... values) {
+        if (values[i] != null) i++;
+        else return values.length;
+        return i;
+    }
+    //------------------------ INJECTORS --------------------------
+
+    //------------------------ INSTRUMENTATION CLEANER --------------------------
+    //A dummy Add procedure to test some logic branches
+    public int instrumentedStatements(Object... values) {
+        int result = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != null) result++;
+            else { return 0; }
+        }
+        return values.length;
+    }
+    //------------------------ INSTRUMENTATION CLEANER --------------------------
 }
+
+

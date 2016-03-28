@@ -66,15 +66,11 @@ public class LoaderFileGeneratorTest extends BenchmarkTest {
 
     @Test
     public void testGenerateAndCompile() throws Exception {
-
         String testPrj = ResourcesPaths.getTestPath(this, "loadertestprj");
-
         generateReader(testPrj);
-
         String loaderOut = ResourcesPaths.getTestPath(this,
                 "loadertestprj/src/main/java/fr/inria/loadertestprj/Loader.java");
         assertTrue(new File(loaderOut).exists());
-
         runBuilderAndAssertSuccess(testPrj, new String[]{"compile"});
     }
 

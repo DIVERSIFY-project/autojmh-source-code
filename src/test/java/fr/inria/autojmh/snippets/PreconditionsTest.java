@@ -41,6 +41,14 @@ public class PreconditionsTest {
     }
 
     @Test
+    public void testCheckSnippet_ProtectedAbstract_Fail() throws Exception {
+        List<BenchSnippet> list = loadSnippets(this, "callProtectedAbstractMethod", CtIf.class);
+        Preconditions preconditions = new Preconditions();
+        assertFalse(preconditions.checkSnippet(list.get(0)));
+        assertFalse(list.get(0).meetsPreconditions());
+    }
+
+    @Test
     public void testCheckSnippet_Methods_Pass() throws Exception {
         List<BenchSnippet> list = loadSnippets(this, "callTheCallPass", CtIf.class);
         Preconditions preconditions = new Preconditions();

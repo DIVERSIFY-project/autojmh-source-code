@@ -1,6 +1,6 @@
-package fr.inria.autojmh.generators.transformations.substitutes;
+package fr.inria.autojmh.generators.microbenchmark.parts.substitutes;
 
-import fr.inria.autojmh.generators.transformations.printer.AJMHPrettyPrinter;
+import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtAnnotation;
@@ -86,7 +86,7 @@ public class CtInvocationDecorator<E> extends CtInvocationImpl<E> {
 
     @Override
     public void accept(CtVisitor visitor) {
-        wrap.accept(visitor);
+        visitor.visitCtInvocation(this);
     }
 
     @Override

@@ -1,5 +1,7 @@
-package fr.inria.autojmh.generators;
+package fr.inria.autojmh.generators.microbenchmark;
 
+import fr.inria.autojmh.generators.BenchmarkTest;
+import fr.inria.autojmh.generators.microbenchmark.MicrobenchmarkGenerator;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import org.junit.Before;
 import org.junit.Test;

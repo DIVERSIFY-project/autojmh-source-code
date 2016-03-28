@@ -1,6 +1,6 @@
-package fr.inria.autojmh.generators.transformations.substitutes;
+package fr.inria.autojmh.generators.microbenchmark.parts.substitutes;
 
-import fr.inria.autojmh.generators.transformations.printer.AJMHPrettyPrinter;
+import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import spoon.reflect.code.CtCodeElement;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.cu.SourcePosition;

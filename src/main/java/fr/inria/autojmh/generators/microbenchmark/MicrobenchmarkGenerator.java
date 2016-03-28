@@ -1,7 +1,9 @@
-package fr.inria.autojmh.generators;
+package fr.inria.autojmh.generators.microbenchmark;
 
-//import fr.inria.autojmh.generators.transformations.StaticMethodCalls;
-import fr.inria.autojmh.generators.transformations.DecoratorsReplacement;
+//import fr.inria.autojmh.generators.microbenchmark.parts.StaticMethodCalls;
+import fr.inria.autojmh.generators.BaseGenerator;
+import fr.inria.autojmh.generators.microbenchmark.parts.SnippetCode;
+import fr.inria.autojmh.generators.microbenchmark.parts.ExtractedMethods;
 import fr.inria.autojmh.instrument.DataContextFileChooser;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
@@ -51,7 +53,6 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         if (!getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName()))
             return;
 
-
         //Obtain the list of imports from the variables
         Set<String> imports = new HashSet<>();
         for (TemplateInputVariable v : snippet.getTemplateAccessesWrappers()) {
@@ -79,13 +80,13 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         input.put("data_root_folder_path", new File(dataContextPath).getAbsolutePath().replace("\\", "/"));
         //input.put("data_file_path", snippet.getMicrobenchmarkClassName());
 
-        DecoratorsReplacement decorators = new DecoratorsReplacement();
-        decorators.transform(snippet);
+        SnippetCode decorators = new SnippetCode();
+        decorators.generate(snippet);
 
-        //Input the static methods
-        input.put("static_methods", decorators.getGeneratedCode());
+        //Input the extracted methods
+        input.put("static_methods", new ExtractedMethods().generate(snippet));
         //Code of the snippet
-        input.put("snippet_code", decorators.getModifiedSnippetCode());
+        input.put("snippet_code", new SnippetCode().generate(snippet));
 
         //String degradedType = false ? GRACEFULLY_BENCHMARK : ORIGINAL_BENCHMARK;
         //input.put("degraded_type", degradedType);

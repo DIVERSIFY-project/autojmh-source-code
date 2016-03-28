@@ -65,4 +65,8 @@ public class ElementProvider {
         return selector.getSnippets();
     }
 
+    public static BenchSnippet loadFirstSnippets(Object that, String method, Class<?> klass) throws Exception {
+        return loadSnippets(that, method, klass).get(0);
+    }
+
 }

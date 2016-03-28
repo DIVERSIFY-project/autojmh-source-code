@@ -1,4 +1,4 @@
-package fr.inria.autojmh.generators.reset;
+package fr.inria.autojmh.generators.microbenchmark.reset;
 
 import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
 import spoon.reflect.code.CtVariableAccess;

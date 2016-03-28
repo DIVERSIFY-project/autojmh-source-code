@@ -114,7 +114,7 @@ public class BenchSnippet implements Configurable {
     }
 
     //Indicates if the snippet meets the preconditions
-    private Boolean meetsPreconditions;
+    private Boolean meetsPreconditions = null;
 
     /**
      * Gets the name of the micro benchmark class for this snippet
@@ -167,7 +167,7 @@ public class BenchSnippet implements Configurable {
 
 
     /**
-     * Some extra information is needed per variable inside the snippet to generate the transformations. This
+     * Some extra information is needed per variable inside the snippet to generate the parts. This
      * information is wrapped in an extra
      * <p>
      * Build the set of template wrappers for the input variables of the loop

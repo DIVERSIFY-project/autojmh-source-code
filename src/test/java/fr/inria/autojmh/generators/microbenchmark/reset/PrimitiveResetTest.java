@@ -1,8 +1,8 @@
-package fr.inria.autojmh.generators.reset;
+package fr.inria.autojmh.generators.microbenchmark.reset;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static junit.framework.TestCase.assertEquals;
 
 /**
  * Created by marodrig on 02/02/2016.

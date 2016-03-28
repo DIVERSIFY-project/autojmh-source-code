@@ -1,16 +1,14 @@
 package fr.inria.autojmh.generators;
 
+import fr.inria.autojmh.generators.microbenchmark.MicrobenchmarkGenerator;
 import fr.inria.autojmh.instrument.DataContextInstrumenter;
 import fr.inria.autojmh.projectbuilders.Maven.MavenProjectBuilder;
 import fr.inria.autojmh.projectbuilders.ProjectFiles;
 import fr.inria.autojmh.selection.*;
 import fr.inria.autojmh.snippets.BenchSnippet;
-import fr.inria.autojmh.snippets.Preconditions;
 import fr.inria.autojmh.tool.AJMHConfiguration;
+import fr.inria.autojmh.tool.InstrumentationCleaner;
 import org.apache.log4j.Logger;
-import spoon.reflect.code.CtBlock;
-import spoon.reflect.code.CtCodeSnippetStatement;
-import spoon.reflect.code.CtStatement;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +115,6 @@ public class AJMHGenerator implements BenchmakGenerator {
 
             log.info("Removing non compliant snippets");
             List<BenchSnippet> complyingSnippets = new ArrayList<>();
-            Preconditions preconditions = new Preconditions();
             for (BenchSnippet snippet : snippets) {
                 if (snippet.meetsPreconditions()) complyingSnippets.add(snippet);
             }
@@ -143,7 +140,7 @@ public class AJMHGenerator implements BenchmakGenerator {
             runGenerators(new TestForMicrobenchmarkGenerator(), snippets);
             log.info("Unit tests file generated");
 
-            //After the generation of the transformations, the snippet changes its AST
+            //After the generation of the parts, the snippet changes its AST
             //That's why they are the last thing to be generated
             MicrobenchmarkGenerator g = new MicrobenchmarkGenerator();
             runGenerators(g, snippets);
@@ -162,26 +159,11 @@ public class AJMHGenerator implements BenchmakGenerator {
         }
     }
 
-
     /**
      * Cleans the instrumentation out of the AST of the project
      */
     private void cleanInstrumentation(List<BenchSnippet> snippets) {
-        for (BenchSnippet s : snippets) {
-            CtStatement st = s.getASTElement();
-            if (st.getParent() instanceof CtBlock) {
-                CtBlock block = (CtBlock) st.getParent();
-                int k = 0;
-                while (k < block.getStatements().size()){
-                    CtStatement blockSt = block.getStatement(k);
-                    if (blockSt instanceof CtCodeSnippetStatement) {
-                        CtCodeSnippetStatement snippet = (CtCodeSnippetStatement) blockSt;
-                        if (snippet.getValue().startsWith("fr.inria.autojmh"))
-                            block.removeStatement(blockSt);
-                    } else k++;
-                }
-            }
-        }
+        new InstrumentationCleaner().cleanUp(snippets);
     }
 
     /**

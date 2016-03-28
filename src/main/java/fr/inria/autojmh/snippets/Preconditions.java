@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * A class that holds the code to enforce the preconditions needed for a snippet in order to be selected for an
- * automatic transformations
+ * automatic parts
  * <p>
  * Created by marodrig on 22/03/2016.
  */
@@ -85,7 +85,7 @@ public class Preconditions implements Configurable {
     }
 
     /**
-     * Indicate whether we can extract the segment into a transformations or not.
+     * Indicate whether we can extract the segment into a parts or not.
      * An snippet must meet certain preconditions.
      */
     public boolean checkSnippet(BenchSnippet snippet) {
@@ -213,7 +213,8 @@ public class Preconditions implements Configurable {
                     } else {
                         //Checks that the target is accepted.
                         //TODO: check recursively when the target is another invocation.
-                        return !checkTypeRef(inv.getTarget().getType()) && !incCause(DYN_METHOD_TARGET_TYPE_UNSUPPORTED);
+                        if ( !checkTypeRef(inv.getTarget().getType()) )
+                            return !incCause(DYN_METHOD_TARGET_TYPE_UNSUPPORTED);
                     }
 
                 } catch (Exception ex) {

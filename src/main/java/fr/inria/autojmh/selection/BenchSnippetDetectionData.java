@@ -16,6 +16,10 @@ public class BenchSnippetDetectionData extends DetectionData {
         return snippet;
     }
 
+    public BenchSnippetDetectionData(BenchSnippet snippet) {
+        this.snippet = snippet;
+    }
+
     public void setSnippet(BenchSnippet snippet) {
         this.snippet = snippet;
     }

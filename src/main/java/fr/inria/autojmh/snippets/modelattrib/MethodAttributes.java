@@ -1,6 +1,5 @@
 package fr.inria.autojmh.snippets.modelattrib;
 
-import fr.inria.autojmh.generators.transformations.substitutes.CtInvocationDecorator;
 import org.apache.log4j.Logger;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtInvocation;

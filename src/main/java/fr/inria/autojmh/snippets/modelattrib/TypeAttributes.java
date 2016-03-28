@@ -2,11 +2,15 @@ package fr.inria.autojmh.snippets.modelattrib;
 
 import fr.inria.autojmh.snippets.Preconditions;
 import org.apache.log4j.Logger;
+import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.reference.CtArrayTypeReference;
+import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.reference.CtTypeReferenceImpl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,24 +29,35 @@ public class TypeAttributes {
     private Boolean isCollection;
     private Boolean isSerializable;
 
+    public TypeAttributes(Boolean isClassPrimitive, Boolean isCollection, Boolean isSerializable) {
+        this.isClassPrimitive = isClassPrimitive;
+        this.isCollection = isCollection;
+        this.isSerializable = isSerializable;
+    }
+
     public TypeAttributes(CtTypeReference ref) {
         this.ref = ref;
     }
 
     public boolean isClassPrimitive() {
-        if (isClassPrimitive == null) {
-            isClassPrimitive = ref.getQualifiedName().equals("java.lang.Byte") ||
-                    ref.getQualifiedName().equals("java.lang.Boolean") ||
-                    ref.getQualifiedName().equals("java.lang.Character") ||
-                    ref.getQualifiedName().equals("java.lang.Double") ||
-                    ref.getQualifiedName().equals("java.lang.Float") ||
-                    ref.getQualifiedName().equals("java.lang.Integer") ||
-                    ref.getQualifiedName().equals("java.lang.Long") ||
-                    ref.getQualifiedName().equals("java.lang.Number") ||
-                    ref.getQualifiedName().equals("java.lang.Short") ||
-                    ref.getQualifiedName().equals("java.lang.String");
-        }
+        if (isClassPrimitive == null) isClassPrimitive = isClassPrimitive(ref);
         return isClassPrimitive;
+    }
+
+    /**
+     * Indicates whether the type is a class primitive (Byte, Double, String)
+     */
+    public static boolean isClassPrimitive(CtTypeReference ref) {
+        return ref.getQualifiedName().equals("java.lang.Byte") ||
+                ref.getQualifiedName().equals("java.lang.Boolean") ||
+                ref.getQualifiedName().equals("java.lang.Character") ||
+                ref.getQualifiedName().equals("java.lang.Double") ||
+                ref.getQualifiedName().equals("java.lang.Float") ||
+                ref.getQualifiedName().equals("java.lang.Integer") ||
+                ref.getQualifiedName().equals("java.lang.Long") ||
+                ref.getQualifiedName().equals("java.lang.Number") ||
+                ref.getQualifiedName().equals("java.lang.Short") ||
+                ref.getQualifiedName().equals("java.lang.String");
     }
 
     public boolean isCollection() {
@@ -56,9 +71,9 @@ public class TypeAttributes {
      * @param ref
      * @return
      */
-    private boolean isCollection(CtTypeReference ref) {
+    public static boolean isCollection(CtTypeReference ref) {
         try {
-            if ( ref instanceof CtArrayTypeReference) return true;
+            if (ref instanceof CtArrayTypeReference) return true;
             Set<CtTypeReference> refs = ref.getSuperInterfaces();
             if (refs == null) return false;
             for (CtTypeReference r : refs)
@@ -85,10 +100,11 @@ public class TypeAttributes {
      * @param componentType
      * @return
      */
-    private boolean isSerializable(CtTypeReference componentType) {
+    public static boolean isSerializable(CtTypeReference componentType) {
         try {
             HashSet<CtTypeReference> refs = new HashSet<>();
-            if (componentType.getSuperInterfaces() != null) refs.addAll(componentType.getSuperInterfaces());
+            if (componentType.getSuperInterfaces() != null)
+                refs.addAll(componentType.getSuperInterfaces());
             CtTypeReference superRef = componentType.getSuperclass();
             if (superRef != null) refs.add(superRef);
             if (refs.size() == 0) return false;
@@ -103,4 +119,19 @@ public class TypeAttributes {
         }
     }
 
+    Boolean isSerializableCollection = null;
+
+    public boolean isSerializableCollection() {
+        if (isSerializableCollection == null)
+            isSerializableCollection = isSerializableCollection(ref);
+        return isSerializableCollection;
+    }
+
+    public static boolean isSerializableCollection(CtTypeReference type) {
+        if ( isCollection(type) && type.getActualTypeArguments().size() > 0 ) {
+            for ( CtTypeReference ref : type.getActualTypeArguments() )
+                if ( !isSerializable(ref) || isClassPrimitive(ref) ) return false;
+        }
+        return true;
+    }
 }

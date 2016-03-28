@@ -42,7 +42,7 @@ public class TestForMicrobenchmarkGenerator extends BaseGenerator {
             generateOutput(input, "test-micro-benchmark.ftl", writeToFile, outputPath + "/" +
                     snippet.getMicrobenchmarkClassName() + "Test.java");
         } catch (IOException ex) {
-            log.warn("Unable to find the after file. THIS SHOULD NOT BE HAPPENING.");
+            log.error("Can't find AFTER file for: " + snippet.getMicrobenchmarkClassName());
             //throw new RuntimeException(ex);
         }
         //input.put("data_file_path", snippet.getMicrobenchmarkClassName());

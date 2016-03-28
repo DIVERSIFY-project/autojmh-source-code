@@ -1,13 +1,12 @@
 package fr.inria.autojmh.generators;
 
+import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
 import fr.inria.autojmh.tool.AJMHConfiguration;
+import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.reference.CtTypeReference;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * A generator to generate the POM file for the benchmark project
@@ -36,7 +35,6 @@ public class LoaderGenerator extends BaseGenerator {
             "TreeSet",
             "ArrayList"};
 
-
     public static final String[] METHODS_NAME = {
             "Byte",
             "Short",
@@ -61,6 +59,9 @@ public class LoaderGenerator extends BaseGenerator {
 
     @Override
     public void generate() {
+
+
+
         List<StreamType> types = new ArrayList<>();
         for (int i = 0; i < PRIMITIVES.length; i++)
             types.add(new StreamType(PRIMITIVES[i], METHODS_NAME[i], PRIMITIVE_CLASS_NAME[i]));
@@ -68,6 +69,22 @@ public class LoaderGenerator extends BaseGenerator {
         ArrayList<CollectionType> collTypes = new ArrayList<>();
         for (int i = 0; i < COLLECTIONS.length; i++)
             collTypes.add(new CollectionType(COLLECTIONS[i], CONCRETE_COLLECTIONS[i]));
+
+        /*
+        //Retrieve the serializable collection types
+        */
+        /*
+        List<StreamType> types = new ArrayList<>();
+        HashSet<CtTypeReference> serCollTypes = new HashSet<>();
+        for (BenchSnippet s : getSnippets())
+            for (CtVariableAccess a : s.getAccesses()) {
+                CtTypeReference ref = a.getType();
+                if (!serCollTypes.contains(a.getType())) {
+                    serCollTypes.add(ref);
+                    String name = ref.getSimpleName();
+                    types.add(new StreamType(name, name + "Collection", new TypeAttributes(ref)));
+                }
+            }*/
 
         HashMap<String, Object> input = new HashMap<>();
         input.put("types", types);
