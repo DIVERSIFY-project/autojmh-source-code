@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtNewClass;
+import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
@@ -39,6 +40,14 @@ public class MethodAttributes {
 
     public MethodAttributes(CtElement e) {
         this.element = e;
+    }
+
+    public static boolean targetIsThis(CtInvocation inv) {
+        if ( inv.getTarget() == null ) return true;
+        if (inv.getTarget() instanceof CtVariableAccess) {
+            return inv.getTarget().toString().equals("this");
+        }
+        return false;
     }
 
     /**

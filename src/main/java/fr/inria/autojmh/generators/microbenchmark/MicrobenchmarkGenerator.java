@@ -83,10 +83,11 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         SnippetCode decorators = new SnippetCode();
         decorators.generate(snippet);
 
-        //Input the extracted methods
-        input.put("static_methods", new ExtractedMethods().generate(snippet));
-        //Code of the snippet
+        //Code of the snippet and Input the extracted methods
+        //THE ORDER OF THIS TWO OPERATIONS IS IMPORTANT!!!
         input.put("snippet_code", new SnippetCode().generate(snippet));
+        input.put("static_methods", new ExtractedMethods().generate(snippet));
+
 
         //String degradedType = false ? GRACEFULLY_BENCHMARK : ORIGINAL_BENCHMARK;
         //input.put("degraded_type", degradedType);

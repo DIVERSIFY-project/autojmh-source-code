@@ -26,6 +26,7 @@ public class ExtractedMethods extends AbstractMicrobenchmarkPart {
 
         //Print invocations
         HashSet<CtInvocation> visited = new HashSet<>();
+        HashSet<CtExecutable> extracted = new HashSet<>();
         Stack<CtInvocation> stack = new Stack<>();
         for (CtInvocation inv : snippet.getASTElement().getElements(
                 new TypeFilter<CtInvocation>(CtInvocation.class)))
@@ -37,7 +38,8 @@ public class ExtractedMethods extends AbstractMicrobenchmarkPart {
             visited.add(inv);
             //Try to get the declaration
             CtExecutable ex = inv.getExecutable().getDeclaration();
-            if ( ex != null ) {
+            if ( ex != null && !extracted.contains(ex) ) {
+                extracted.add(ex);
                 Environment env = snippet.getASTElement().getFactory().getEnvironment();
                 AJMHPrettyPrinter printer = new AJMHPrettyPrinter(env);
                 printer.scan(ex);

@@ -1,6 +1,7 @@
 package fr.inria.autojmh.generators.microbenchmark.parts.substitutes;
 
 import fr.inria.autojmh.snippets.BenchSnippet;
+import org.junit.Ignore;
 import org.junit.Test;
 import spoon.reflect.code.CtReturn;
 
@@ -14,6 +15,7 @@ import static junit.framework.TestCase.fail;
  */
 public class CtVariableAccessDecoratorTest {
 
+    @Ignore
     @Test
     public void testToString() throws Exception {
         //

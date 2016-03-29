@@ -38,8 +38,8 @@ public class SnippetCodeTest {
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         //Assert the code generation
-        assertTrue(code.contains("callPrivate(THIZ)"));
-        assertFalse(code.contains("callPrivate()"));
+        assertTrue(code.contains("callPrivate(THIZ, bb)"));
+        assertFalse(code.contains("callPrivate(bb)"));
         assertTrue(code.contains("callProtected(THIZ)"));
         assertFalse(code.contains("callProtected()"));
         assertFalse(code.contains("callPublic(THIZ)"));
@@ -58,6 +58,29 @@ public class SnippetCodeTest {
         //Assert the code generation
         assertTrue(code.contains("ac.abstractMethod()"));
         assertFalse(code.contains("abstractMethod(ac)"));
+    }
+
+    /**
+     * Test that a public method's target is equal to THIZ
+     */
+    @Test
+    public void testTransform_Public_with_THIZ_Target() throws Exception {
+        List<BenchSnippet> list = loadSnippets(this, "callInvocationsSomePublic", CtIf.class);
+        SnippetCode replacement = new SnippetCode();
+        String code = replacement.generate(list.get(0));
+        List<CtInvocation> invs = list.get(0).getASTElement().getElements(
+                new TypeFilter<CtInvocation>(CtInvocation.class));
+        assertEquals(3, invs.size());
+        //Assert all invocations are transformed
+        assertTrue(invs.get(0) instanceof CtInvocationDecorator);
+        assertTrue(invs.get(1) instanceof CtInvocationDecorator);
+        assertTrue(invs.get(2) instanceof CtInvocationDecorator);
+
+        System.out.print(code);
+        //Assert the code generation
+        assertTrue(code.contains("callPrivate(THIZ, bb)"));
+        assertTrue(code.contains("THIZ.callPublic(bb)"));
+        assertFalse(code.contains(" callPublic(bb)"));
     }
 
     /**

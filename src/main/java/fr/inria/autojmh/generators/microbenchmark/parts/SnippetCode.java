@@ -16,8 +16,8 @@ import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.List;
 
+import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.targetIsThis;
 import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.visibility;
-import static spoon.reflect.declaration.ModifierKind.PUBLIC;
 
 /**
  * Extract private static method out of an statement and copy its body to the parts
@@ -64,21 +64,24 @@ public class SnippetCode extends AbstractMicrobenchmarkPart implements Configura
         //Replace invocations
         List<CtInvocation> invs = st.getElements(new TypeFilter<CtInvocation>(CtInvocation.class));
         for (CtInvocation inv : invs) {
-            if (!(inv instanceof CtInvocationDecorator) && visibility(inv) != PUBLIC) {
+            ModifierKind m = visibility(inv);
+            if (!(inv instanceof CtInvocationDecorator) &&
+                    //We must replace protected/private methods and public methods calling 'this'
+                    (targetIsThis(inv) || m != ModifierKind.PUBLIC)) {
                 CtInvocationDecorator invDeco = new CtInvocationDecorator(inv);
                 invDeco.setParent(inv.getParent());
                 inv.replace(invDeco);
                 //Find body of the element
-                CtBlock b = inv.getExecutable().getDeclaration().getBody();
-                if (b == null) {
-                    log.error("Can´t find method's body for:" + snippet.getMicrobenchmarkClassName() );
-                    throw new RuntimeException();
+                if (m != ModifierKind.PUBLIC) {
+                    CtBlock b = inv.getExecutable().getDeclaration().getBody();
+                    if (b == null) {
+                        log.error("Can't replace method's body for:" + snippet.getMicrobenchmarkClassName());
+                        throw new RuntimeException();
+                    } else replace(b, deep, snippet);
                 }
-                else replace(b, deep, snippet);
             }
         }
     }
-
 
 
     @Override

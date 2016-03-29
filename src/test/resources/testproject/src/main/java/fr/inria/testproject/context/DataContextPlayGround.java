@@ -97,11 +97,15 @@ public abstract class DataContextPlayGround {
 
 
     //------------------------ METHOD ATTRIBUTES --------------------------
+    private int callPrivate(boolean k) {
+        return callPrivate(k);
+    }
     private int callPrivate() {
         return callPrivate();
     }
-    public int callPublic() {
-        return callPublic();
+
+    public int callPublic(  boolean k ) {
+        return callPublic(k);
     }
     protected int callProtected() {
         return callProtected();
@@ -112,6 +116,15 @@ public abstract class DataContextPlayGround {
 
 
     //------------------------ DecoratorTransoformation ATTRIBUTES --------------------------
+    private static int privateStaticMethod(int x) {
+        if ( x > 100 ) return x;
+        return privateStaticMethod(x + x * 90);
+    }
+
+    public int callStatic( int bb ) {
+        return privateStaticMethod(bb);
+    }
+
     public void callInvocations( boolean bb ) {
         if ( bb ) {
             callPrivate();
@@ -122,10 +135,10 @@ public abstract class DataContextPlayGround {
 
     public void callInvocationsSomePublic( boolean bb ) {
         if ( bb ) {
-            callPrivate();
+            callPrivate(bb);
             callProtected();
             //callPublic();
-        } else callPublic();
+        } else callPublic(bb);
     }
 
     protected abstract void protectedAbsctractMethod();
