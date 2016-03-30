@@ -16,6 +16,26 @@ import static junit.framework.Assert.assertTrue;
 
 public class LoaderFileGeneratorTest extends BenchmarkTest {
 
+    private void generateReader(String path) throws URISyntaxException {
+        AJMHConfiguration configuration = buildGenerationConf();
+        configuration.setGenerationOutputPath(path);
+        configuration.setPackageName("fr.inria.loadertestprj");
+
+        LoaderGenerator generator = new LoaderGenerator();
+        generator.configure(configuration);
+        generator.setWriteToFile(true);
+        generator.generate();
+    }
+
+    private void runBuilderAndAssertSuccess(String path, String[] phases) throws InterruptedException, IOException {
+        MavenBuilder mb = new MavenBuilder(path, path + "/src/main/java");
+        mb.setPhase(phases);//);
+        mb.setTimeOut(1000);
+        mb.setVerbose(true);
+        mb.runBuilder();
+        assertEquals(0, (int) mb.getStatus());
+    }
+
     @Before
     public void setup() throws URISyntaxException {
         String testPrj = ResourcesPaths.getTestPath(this, "loadertestprj");
@@ -42,26 +62,6 @@ public class LoaderFileGeneratorTest extends BenchmarkTest {
             assertTrue(generator.getOutput().contains(
                     String.format("public %s read%s", PRIMITIVES[i], PRIMITIVES[i])));
         }
-    }
-
-    private void generateReader(String path) throws URISyntaxException {
-        AJMHConfiguration configuration = buildGenerationConf();
-        configuration.setGenerationOutputPath(path);
-        configuration.setPackageName("fr.inria.loadertestprj");
-
-        LoaderGenerator generator = new LoaderGenerator();
-        generator.configure(configuration);
-        generator.setWriteToFile(true);
-        generator.generate();
-    }
-
-    private void runBuilderAndAssertSuccess(String path, String[] phases) throws InterruptedException, IOException {
-        MavenBuilder mb = new MavenBuilder(path, path + "/src/main/java");
-        mb.setPhase(phases);//);
-        mb.setTimeOut(1000);
-        mb.setVerbose(true);
-        mb.runBuilder();
-        assertEquals(0, (int) mb.getStatus());
     }
 
     @Test

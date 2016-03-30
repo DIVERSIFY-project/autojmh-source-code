@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  */
 public class ResetAnalysisTest {
 
-    @Ignore
+    @Ignore ("Functionality still not implemented")
     @Test
     public void testRun() throws Exception {
 

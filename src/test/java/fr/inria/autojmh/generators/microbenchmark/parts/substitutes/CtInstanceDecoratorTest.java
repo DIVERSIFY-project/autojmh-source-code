@@ -1,8 +1,7 @@
 package fr.inria.autojmh.generators.microbenchmark.parts.substitutes;
 
 import fr.inria.autojmh.generators.microbenchmark.parts.SnippetCode;
-import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import org.junit.Test;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtInvocation;
@@ -20,7 +19,7 @@ public class CtInstanceDecoratorTest {
 
     @Test
     public void testToString() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "callInvocations", CtIf.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "callInvocations", CtIf.class);
         SnippetCode replacement = new SnippetCode();
         replacement.generate(list.get(0));
         List<CtInvocation> invs = list.get(0).getASTElement().getElements(

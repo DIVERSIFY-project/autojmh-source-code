@@ -1,6 +1,6 @@
 package fr.inria.autojmh.tool;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import spoon.reflect.code.CtBlock;
 import spoon.reflect.code.CtCodeSnippetStatement;
 import spoon.reflect.code.CtReturn;
@@ -22,8 +22,8 @@ public class InstrumentationCleaner {
     /**
      * Cleans up the whole list of snippets
      */
-    public void cleanUp(List<BenchSnippet> snippets) {
-        for (BenchSnippet s : snippets) {
+    public void cleanUp(List<SourceCodeSnippet> snippets) {
+        for (SourceCodeSnippet s : snippets) {
             cleanStatement(s.getASTElement());
             for (CtReturn r : s.getASTElement().getElements(
                     new TypeFilter<CtReturn>(CtReturn.class))) {

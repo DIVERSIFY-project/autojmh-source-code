@@ -2,7 +2,7 @@ package fr.inria.autojmh.generators.microbenchmark.parts;
 
 import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtInvocationDecorator;
 import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtVariableAccessDecorator;
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import org.junit.Ignore;
 import org.junit.Test;
 import spoon.reflect.code.*;
@@ -22,15 +22,15 @@ public class SnippetCodeTest {
 
     private static class GenResult {
         String code;
-        BenchSnippet snippet;
-        GenResult(String code, BenchSnippet snippet) {
+        SourceCodeSnippet snippet;
+        GenResult(String code, SourceCodeSnippet snippet) {
             this.code = code;
             this.snippet = snippet;
         }
     }
 
     private GenResult generateCode(String method, Class<?> klazz) throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, method, klazz);
+        List<SourceCodeSnippet> list = loadSnippets(this, method, klazz);
         SnippetCode replacement = new SnippetCode();
         return new GenResult(replacement.generate(list.get(0)), list.get(0));
     }
@@ -59,7 +59,7 @@ public class SnippetCodeTest {
 
     @Test
     public void testTransform_Invocations_AbstractPublic() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "callPublicAbstractMethod", CtReturn.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "callPublicAbstractMethod", CtReturn.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         List<CtInvocation> invs = list.get(0).getASTElement().getElements(
@@ -85,7 +85,7 @@ public class SnippetCodeTest {
      */
     @Test
     public void testTransform_Public_with_THIZ_Target() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "callInvocationsSomePublic", CtIf.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "callInvocationsSomePublic", CtIf.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         List<CtInvocation> invs = list.get(0).getASTElement().getElements(
@@ -108,14 +108,14 @@ public class SnippetCodeTest {
      */
     @Test(expected = RuntimeException.class)
     public void testTransform_AbstractProtected_Method() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "callProtectedAbstractMethod", CtIf.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "callProtectedAbstractMethod", CtIf.class);
         SnippetCode replacement = new SnippetCode();
         replacement.generate(list.get(0));
     }
 
     @Test
     public void testTransform_Variables() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "arrayOfSerializables", CtLoop.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "arrayOfSerializables", CtLoop.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         List<CtVariableAccess> invs = list.get(0).getAccesses();
@@ -128,7 +128,7 @@ public class SnippetCodeTest {
 
     @Test
     public void testTransform_LocalVariables() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "containOnlyPrimitiveClasses", CtExpression.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "containOnlyPrimitiveClasses", CtExpression.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         assertEquals("b = b * a", code);
@@ -136,7 +136,7 @@ public class SnippetCodeTest {
 
     @Test
     public void testTransform_PublicConstant() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "privateStaticMethod", CtExpression.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "privateStaticMethod", CtExpression.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         assertTrue(code.contains(" CONSTANT2"));
@@ -144,7 +144,7 @@ public class SnippetCodeTest {
 
     @Test
     public void testTransform_PrivateConstant() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "privateStaticMethod", CtIf.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "privateStaticMethod", CtIf.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_CONSTANT"));
@@ -153,7 +153,7 @@ public class SnippetCodeTest {
 
     @Test
     public void testTransform_Private_THIZ_Field() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "anIntMethod", CtAssignment.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "anIntMethod", CtAssignment.class);
         SnippetCode replacement = new SnippetCode();
         String code = replacement.generate(list.get(0));
         assertTrue(code.contains("THIZ_field1"));
@@ -162,28 +162,28 @@ public class SnippetCodeTest {
 
     @Test
     public void testTransform_Private_TARGET_Field() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "anIntMethod", CtWhile.class);
-        SnippetCode replacement = new SnippetCode();
-        String code = replacement.generate(list.get(0));
-        assertTrue(code.contains("ground_field1"));
-        assertFalse(code.contains("ground.field1"));
+        GenResult r = generateCode("anIntMethod", CtWhile.class);
+        assertTrue(r.code.contains("ground_field1"));
+        assertFalse(r.code.contains("ground.field1"));
     }
 
     @Test
     public void testTransform_Public_NON_Serializable() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "callNonSerializable", CtReturn.class);
-        SnippetCode replacement = new SnippetCode();
-        String code = replacement.generate(list.get(0));
-        assertTrue(code.contains("seri_pubNonSerializable"));
-        assertFalse(code.contains("seri.pubNonSerializable"));
+        GenResult r = generateCode("callNonSerializable", CtReturn.class);
+        assertTrue(r.code.contains("seri_pubNonSerializable"));
+        assertFalse(r.code.contains("seri.pubNonSerializable"));
     }
 
-    @Ignore
     @Test
     public void testTransform_Public_Serializable_THIZ() throws Exception {
-        fail();
+        List<SourceCodeSnippet> snippets = loadSnippets(this, "doSomethingWithPriValue", "SerializableObject", CtIf.class);
+        SnippetCode replacement = new SnippetCode();
+        String code = replacement.generate(snippets.get(0));
+        assertTrue(code.contains("THIZ_priValue"));
+        assertFalse(code.contains(" priValue"));
     }
 
+    @Ignore("The correct behavior here is still undefined")
     @Test
     public void testTransform_Public_Serializable_TARGET() throws Exception {
         GenResult r = generateCode("callSerializable", CtReturn.class);

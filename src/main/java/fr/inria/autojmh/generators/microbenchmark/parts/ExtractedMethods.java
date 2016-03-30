@@ -1,7 +1,7 @@
 package fr.inria.autojmh.generators.microbenchmark.parts;
 
 import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import spoon.compiler.Environment;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.declaration.CtExecutable;
@@ -21,7 +21,7 @@ import static spoon.reflect.declaration.ModifierKind.PUBLIC;
 public class ExtractedMethods extends AbstractMicrobenchmarkPart {
 
     @Override
-    public String generate(BenchSnippet snippet) {
+    public String generate(SourceCodeSnippet snippet) {
         StringBuilder sb = new StringBuilder();
 
         //Print invocations

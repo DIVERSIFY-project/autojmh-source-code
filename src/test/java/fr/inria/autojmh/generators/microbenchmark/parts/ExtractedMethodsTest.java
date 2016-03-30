@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators.microbenchmark.parts;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import org.junit.Test;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtReturn;
@@ -28,7 +28,7 @@ public class ExtractedMethodsTest {
      * @throws Exception if something goes wrong
      */
     private String buildCode(boolean replace, String method, Class<?> klass) throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, method, klass);
+        List<SourceCodeSnippet> list = loadSnippets(this, method, klass);
         if (replace) {
             SnippetCode snippetCode = new SnippetCode();
             snippetCode.generate(list.get(0));
@@ -68,11 +68,6 @@ public class ExtractedMethodsTest {
         String code = buildCode(false, "callStatic", CtReturn.class);
         assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod(int x)"));
         assertTrue(code.contains("privateStaticMethod((x + (x * 90)"));
-    }
-
-    @Test
-    public void testGenerate_StaticMethod_Public() throws Exception {
-        fail();
     }
 
     /**

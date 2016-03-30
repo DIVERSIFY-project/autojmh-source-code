@@ -1,6 +1,6 @@
 package fr.inria.autojmh.tool;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import org.junit.Test;
 import spoon.reflect.code.CtLoop;
 import spoon.reflect.code.CtReturn;
@@ -35,7 +35,7 @@ public class InstrumentationCleanerTest {
      */
     @Test
     public void testCleanUp() throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, "instrumentedStatements", CtLoop.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, "instrumentedStatements", CtLoop.class);
         //Now insert some instrumentation before and after:
         CtStatement ast = list.get(0).getASTElement();
         ast.insertAfter(codeSnippet(INSTRUMENTATION_PACKAGE + ".a()"));

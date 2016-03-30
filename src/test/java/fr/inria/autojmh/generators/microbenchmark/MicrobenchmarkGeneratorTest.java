@@ -1,23 +1,85 @@
 package fr.inria.autojmh.generators.microbenchmark;
 
+import fr.inria.autojmh.ElementProvider;
 import fr.inria.autojmh.generators.BenchmarkTest;
-import fr.inria.autojmh.generators.microbenchmark.MicrobenchmarkGenerator;
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.instrument.DataContextFileChooser;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.tool.AJMHConfiguration;
 import org.junit.Before;
 import org.junit.Test;
+import spoon.reflect.code.CtWhile;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import static fr.inria.autojmh.ResourcesPaths.getMainPath;
+import static fr.inria.autojmh.ResourcesPaths.getTestPath;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Created by marodrig on 28/09/2015.
  */
 public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
 
-    BenchSnippet snippet;
+    public static class StubFileChooser extends DataContextFileChooser {
+        @Override
+        public boolean existsDataFile(String dataPath, String className) {
+            return true;
+        }
+
+        @Override
+        public String chooseAfter(String className) throws IOException {
+            return "file_path";
+        }
+
+        @Override
+        public String chooseBefore(String className) throws IOException {
+            return "file_path_after";
+        }
+    }
+
+    SourceCodeSnippet snippet;
 
     @Before
     public void setup() throws Exception {
         snippet = buildSignalLoop();
+    }
+
+    private String buildOutput(SourceCodeSnippet snippet) throws URISyntaxException {
+        AJMHConfiguration configuration = new AJMHConfiguration();
+        configuration.setWorkingDir(getTestPath(this, "testproject"));
+        configuration.setPackageName("fr.inria.testproject.context");
+        configuration.setGenerationOutputPath("/output_sources");
+        configuration.setTemplatePath(getMainPath("templates"));
+        configuration.setGenerationOutputPath("/output");
+
+        MicrobenchmarkGenerator generator = new MicrobenchmarkGenerator();
+        generator.setChooser(new StubFileChooser());
+        generator.setWriteToFile(false);
+        generator.configure(buildGenerationConf());
+        generator.generate(snippet);
+
+        return generator.getOutput();
+    }
+
+    /**
+     * Test the variable extraction of the whole microbenchamark
+     */
+    @Test
+    public void test_Variables_AnIntMethod() throws Exception {
+        String output = buildOutput(ElementProvider.loadFirstSnippets(this, "anIntMethod", CtWhile.class));
+
+        //Var declaration
+        assertTrue(output.contains("public int ground_field1"));
+
+        //Var initialization
+        assertTrue(output.contains("ground_field1 = "));
+        assertFalse(output.contains("ground.field1 ="));
+        assertFalse(output.contains("(ground.field1) ="));
+
+        //Snippet usage
+        assertTrue(output.contains("while (ground_field1 < 100)"));
     }
 
     @Test

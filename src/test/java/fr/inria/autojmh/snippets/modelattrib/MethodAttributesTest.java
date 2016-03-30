@@ -1,6 +1,6 @@
 package fr.inria.autojmh.snippets.modelattrib;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import org.junit.Test;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtReturn;
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class MethodAttributesTest {
 
     public ModifierKind findVisibility(String method) throws Exception {
-        List<BenchSnippet> list = loadSnippets(this, method, CtReturn.class);
+        List<SourceCodeSnippet> list = loadSnippets(this, method, CtReturn.class);
         List<CtInvocation> invs = list.get(0).getASTElement().getElements(
                 new TypeFilter<CtInvocation>(CtInvocation.class));
         return MethodAttributes.visibility(invs.get(0));

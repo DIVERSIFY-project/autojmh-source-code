@@ -1,5 +1,6 @@
 package fr.inria.autojmh.snippets;
 
+import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtThisAccess;
@@ -66,7 +67,7 @@ public class TemplateInputVariable {
     private String packageQualifiedName;
 
 
-    private void doInitialize(BenchSnippet parent, CtTypeReference typeRef) {
+    private void doInitialize(SourceCodeSnippet parent, CtTypeReference typeRef) {
 
         TypeAttributes refAttr = new TypeAttributes(typeRef);
 
@@ -126,13 +127,13 @@ public class TemplateInputVariable {
      * @param parent
      * @param access
      */
-    public void initialize(BenchSnippet parent, CtVariableAccess access) {
+    public void initialize(SourceCodeSnippet parent, CtVariableAccess access) {
         this.setInitialized(parent.getInitialized().contains(access));
         this.setVariableAccess(access);
         doInitialize(parent, access.getVariable().getType());
     }
 
-    public void initializeAsThiz(BenchSnippet parent) {
+    public void initializeAsThiz(SourceCodeSnippet parent) {
         setInitialized(true);
         setVariableAccess(null);
         setVariableName("this");
@@ -203,14 +204,8 @@ public class TemplateInputVariable {
         //TODO: set other properties
     }
 
-    /*public CtVariableAccess getVariableAccess() {
-        return variableAccess;
-    }*/
-
     /**
      * Gets a name for a variable access that can be placed in the code of the instrumented code and compiled.
-     *
-     * @return
      */
     public String getInstrumentedCodeCompilableName() {
         if ( variableAccess != null )
@@ -218,9 +213,16 @@ public class TemplateInputVariable {
         else return getVariableName();
     }
 
+    /**
+     * Gets a name for a variable access that can be placed in the microbenchmark code.
+     */
     public String getTemplateCodeCompilableName() {
-        if ( variableAccess != null )
-            return getCompilableName(variableAccess, '_');
+        if ( variableAccess != null ) {
+            AJMHPrettyPrinter printer = new AJMHPrettyPrinter(variableAccess.getFactory().getEnvironment());
+            printer.scan(variableAccess);
+            return printer.toString();
+            //return getCompilableName(variableAccess, '_');
+        }
         else return "THIZ";
     }
 

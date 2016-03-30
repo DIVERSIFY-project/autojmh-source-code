@@ -66,6 +66,7 @@ public class MethodAttributes {
         CtExecutableReference ex;
         if ( e instanceof CtInvocation) ex = ((CtInvocation)e).getExecutable();
         else if ( e instanceof CtNewClass )ex = ((CtNewClass)e).getExecutable();
+        else if (e instanceof CtMethod) return ((CtMethod)e).getVisibility();
         else {
             try {
                 CtMethod method = e.getParent(CtMethod.class);

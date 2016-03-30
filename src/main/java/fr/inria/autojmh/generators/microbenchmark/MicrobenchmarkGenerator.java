@@ -5,7 +5,7 @@ import fr.inria.autojmh.generators.BaseGenerator;
 import fr.inria.autojmh.generators.microbenchmark.parts.SnippetCode;
 import fr.inria.autojmh.generators.microbenchmark.parts.ExtractedMethods;
 import fr.inria.autojmh.instrument.DataContextFileChooser;
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.controlflow.AllBranchesReturn;
@@ -48,7 +48,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
      *
      * @throws java.io.FileNotFoundException
      */
-    public void generate(BenchSnippet snippet) {
+    public void generate(SourceCodeSnippet snippet) {
 
         if (!getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName()))
             return;
@@ -62,6 +62,11 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         }
 
         HashMap<String, Object> input = new HashMap<String, Object>();
+        //Code of the snippet and Input the extracted methods
+        //THE ORDER OF THIS TWO OPERATIONS IS IMPORTANT!!!
+        input.put("snippet_code", new SnippetCode().generate(snippet));
+        input.put("static_methods", new ExtractedMethods().generate(snippet));
+
         input.put("package_name", packageName);
         input.put("imports", imports);
         input.put("class_comments", "Benchmark auto generated using AutoJMH");
@@ -80,15 +85,6 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         input.put("data_root_folder_path", new File(dataContextPath).getAbsolutePath().replace("\\", "/"));
         //input.put("data_file_path", snippet.getMicrobenchmarkClassName());
 
-        SnippetCode decorators = new SnippetCode();
-        decorators.generate(snippet);
-
-        //Code of the snippet and Input the extracted methods
-        //THE ORDER OF THIS TWO OPERATIONS IS IMPORTANT!!!
-        input.put("snippet_code", new SnippetCode().generate(snippet));
-        input.put("static_methods", new ExtractedMethods().generate(snippet));
-
-
         //String degradedType = false ? GRACEFULLY_BENCHMARK : ORIGINAL_BENCHMARK;
         //input.put("degraded_type", degradedType);
 
@@ -97,7 +93,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         generatedCount++;
     }
 
-    private String getDefaultReturn(BenchSnippet snippet) {
+    private String getDefaultReturn(SourceCodeSnippet snippet) {
         //Check if the return is actually needed
         AllBranchesReturn branchesReturn = new AllBranchesReturn();
         if (branchesReturn.execute(snippet.getASTElement())) return null;
@@ -174,7 +170,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
 
     @Override
     public void generate() {
-        for (BenchSnippet snippet : getSnippets()) {
+        for (SourceCodeSnippet snippet : getSnippets()) {
             generate(snippet);
         }
     }

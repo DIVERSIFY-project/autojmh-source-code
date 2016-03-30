@@ -11,6 +11,12 @@ public class SerializableObject implements SerializableInterface {
 
     int values;
 
+    private int priValue = 0;
+
+    public void doSomethingWithPriValue() {
+        if ( priValue == 0 ) priValue = -1;
+        else priValue = 0;
+    }
 
     public SerializableObject pubField;
 

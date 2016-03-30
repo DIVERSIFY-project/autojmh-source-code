@@ -1,10 +1,6 @@
 package fr.inria.autojmh.generators;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
-import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
 import fr.inria.autojmh.tool.AJMHConfiguration;
-import spoon.reflect.code.CtVariableAccess;
-import spoon.reflect.reference.CtTypeReference;
 
 import java.util.*;
 

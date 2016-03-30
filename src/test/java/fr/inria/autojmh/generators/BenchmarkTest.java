@@ -1,7 +1,7 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.ResourcesPaths;
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.diversify.syringe.SpoonMetaFactory;
 import spoon.processing.AbstractProcessor;
@@ -15,17 +15,18 @@ import spoon.support.QueueProcessingManager;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import static fr.inria.autojmh.ResourcesPaths.getTestPath;
+
 /**
  * Created by marodrig on 29/09/2015.
  */
 public class BenchmarkTest {
 
-    BenchSnippet snippet;
+    SourceCodeSnippet snippet;
 
     protected AJMHConfiguration buildGenerationConf() throws URISyntaxException {
         AJMHConfiguration configuration = new AJMHConfiguration();
-//        configuration.setWorkingDir(getClass().getClassLoader().getResource("work").toURI().getPath());
-        configuration.setWorkingDir(ResourcesPaths.getTestPath(this, "work"));
+        configuration.setWorkingDir(getTestPath(this, "work"));
         configuration.setPackageName("fr.mypackage");
         configuration.setGenerationOutputPath("/output_sources");
         configuration.setTemplatePath(ResourcesPaths.getMainPath("templates"));
@@ -33,9 +34,9 @@ public class BenchmarkTest {
         return configuration;
     }
 
-    protected BenchSnippet buildSignalLoop() throws Exception {
+    protected SourceCodeSnippet buildSignalLoop() throws Exception {
 
-        snippet = new BenchSnippet();
+        snippet = new SourceCodeSnippet();
 
         //Initialize the CtElements
 

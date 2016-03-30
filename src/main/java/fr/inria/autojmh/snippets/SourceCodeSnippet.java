@@ -21,16 +21,16 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * Class that represents a selected snippet to benchmark.
- * <p>
+ * Class that represents a snippet extracted from the source code.
+  * <p>
  * Created by marodrig on 27/10/2015.
  */
-public class BenchSnippet implements Configurable {
+public class SourceCodeSnippet implements Configurable {
 
     /**
      * Snippet we want to extract data context
      */
-    private static Logger log = Logger.getLogger(BenchSnippet.class);
+    private static Logger log = Logger.getLogger(SourceCodeSnippet.class);
 
 
     /**

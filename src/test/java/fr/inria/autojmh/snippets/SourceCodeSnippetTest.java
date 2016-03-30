@@ -4,7 +4,6 @@ import fr.inria.autojmh.ElementProvider;
 import fr.inria.autojmh.selection.TaggedStatementDetector;
 import org.junit.Test;
 import spoon.reflect.code.CtIf;
-import spoon.reflect.code.CtStatement;
 
 import java.util.List;
 import static fr.inria.autojmh.selection.TaggletStatementDetectorTest.*;
@@ -12,11 +11,11 @@ import static junit.framework.Assert.*;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class BenchSnippetTest {
+public class SourceCodeSnippetTest {
 
     @Test
     public void testMeetsPreconditions() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertTrue(snippets.get(0).meetsPreconditions());
 
         snippets = loadSnippets("arrayOfNonSerializables");
@@ -25,21 +24,21 @@ public class BenchSnippetTest {
 
     @Test
     public void testGetMicrobenchmarkClassName() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertTrue(snippets.get(0).getMicrobenchmarkClassName().startsWith("fr_inria_testproject_context_DataContextPlayGround"));
 
     }
 
     @Test
     public void testGetPosition() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertTrue(snippets.get(0).getPosition().contains(":"));
         assertTrue(snippets.get(0).getPosition().startsWith("fr.inria.testproject.context"));
     }
 
     @Test
     public void testGetBenchMethodReturnType() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertEquals("void", snippets.get(0).getBenchMethodReturnType());
 
         snippets = ElementProvider.loadSnippets(this, "anIntMethod", CtIf.class);
@@ -48,7 +47,7 @@ public class BenchSnippetTest {
 
     @Test
     public void testGetAccesses() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertEquals(4, snippets.get(0).getAccesses().size());
     }
 
@@ -57,7 +56,7 @@ public class BenchSnippetTest {
         //Get some BenchSnippets
         TaggedStatementDetector p = process(
                 this.getClass().getResource("/input_sources/java").toURI().getPath(), getTaggletsList(CLASS_NAME));
-        List<BenchSnippet> benchs = p.getSnippets();
+        List<SourceCodeSnippet> benchs = p.getSnippets();
 
         //We don't know the order in which they came out, some times is 0 some others is 1
         List<TemplateInputVariable> wraps = benchs.get(0).getTemplateAccessesWrappers();
@@ -75,11 +74,11 @@ public class BenchSnippetTest {
      */
     @Test
     public void testArrayOfObjects() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfObjects");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfObjects");
         assertEquals(2, snippets.get(0).getInitialized().size());
     }
 
-    private List<BenchSnippet> loadSnippets(String arrayOfObjects) throws Exception {
+    private List<SourceCodeSnippet> loadSnippets(String arrayOfObjects) throws Exception {
         return ElementProvider.loadSnippets(this, arrayOfObjects);
     }
 
@@ -88,13 +87,13 @@ public class BenchSnippetTest {
      */
     @Test
     public void testGetInitializedArrayOf_NON_Serializables() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfNonSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfNonSerializables");
         assertEquals(2, snippets.get(0).getInitialized().size());
     }
 
     @Test
     public void testGetInitializedArrayOfSerializables() throws Exception {
-        List<BenchSnippet> snippets = loadSnippets("arrayOfSerializables");
+        List<SourceCodeSnippet> snippets = loadSnippets("arrayOfSerializables");
         assertEquals(2, snippets.get(0).getInitialized().size());
     }
 }

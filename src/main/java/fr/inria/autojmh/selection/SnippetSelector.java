@@ -1,12 +1,11 @@
 package fr.inria.autojmh.selection;
 
-import fr.inria.autojmh.snippets.BenchSnippet;
+import fr.inria.autojmh.snippets.SourceCodeSnippet;
 import fr.inria.autojmh.snippets.Preconditions;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.Configurable;
 import fr.inria.diversify.syringe.detectors.AbstractDetector;
 import spoon.reflect.code.CtStatement;
-import spoon.reflect.declaration.CtElement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,11 +22,11 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
     /**
      * Resulting snippets
      */
-    protected List<BenchSnippet> snippets;
+    protected List<SourceCodeSnippet> snippets;
 
     protected Preconditions preconditions;
 
-    public List<BenchSnippet> getSnippets() {
+    public List<SourceCodeSnippet> getSnippets() {
         if ( snippets == null ) snippets = new ArrayList<>();
         return snippets;
     }
@@ -38,7 +37,7 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
     }
 
     public void select(E e) {
-        BenchSnippet s = new BenchSnippet();
+        SourceCodeSnippet s = new SourceCodeSnippet();
         s.setPreconditions(preconditions);
         s.setASTElement(e);
         if (snippets == null) snippets = new ArrayList<>();
@@ -47,7 +46,7 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
 
     @Override
     public void processingDone() {
-        for (BenchSnippet s : getSnippets()) {
+        for (SourceCodeSnippet s : getSnippets()) {
             BenchSnippetDetectionData data = new BenchSnippetDetectionData(s);
             notify(SNIPPET_DETECTED, s.getASTElement(), data);
         }
