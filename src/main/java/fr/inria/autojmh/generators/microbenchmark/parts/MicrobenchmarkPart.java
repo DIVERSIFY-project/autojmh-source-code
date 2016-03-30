@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators.microbenchmark.parts;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 
 /**
  * Class generating code for one specific part of a microbenchmark for a given segment
@@ -12,6 +12,6 @@ public interface MicrobenchmarkPart {
      * Performs the transformation of the snippet's code
      * @param snippet Snippet to be transformed
      */
-    String generate(SourceCodeSnippet snippet);
+    String generate(BenchSnippet snippet);
 
 }

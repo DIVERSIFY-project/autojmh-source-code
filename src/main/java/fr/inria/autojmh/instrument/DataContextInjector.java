@@ -2,7 +2,7 @@ package fr.inria.autojmh.instrument;
 
 import fr.inria.autojmh.instrument.log.Log;
 import fr.inria.autojmh.selection.BenchSnippetDetectionData;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.Configurable;
@@ -41,7 +41,7 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
      *
      * @return
      */
-    protected CtCodeSnippetStatement buildCode(TemplateInputVariable wrap, SourceCodeSnippet input) {
+    protected CtCodeSnippetStatement buildCode(TemplateInputVariable wrap, BenchSnippet input) {
         HashMap<String, Object> m = new HashMap<>();
 
         m.put("var", wrap.getInstrumentedCodeCompilableName());
@@ -74,7 +74,7 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
 
         if (data instanceof BenchSnippetDetectionData) {
             //Build the before injectors
-            SourceCodeSnippet input = ((BenchSnippetDetectionData) data).getSnippet();
+            BenchSnippet input = ((BenchSnippetDetectionData) data).getSnippet();
 
             //Reject snippet if it does not meet preconditions.
             if ( !input.meetsPreconditions() ) return;

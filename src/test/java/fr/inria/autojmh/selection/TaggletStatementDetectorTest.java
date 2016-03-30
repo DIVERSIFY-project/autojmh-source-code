@@ -1,6 +1,6 @@
 package fr.inria.autojmh.selection;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.diversify.syringe.SpoonMetaFactory;
 import org.junit.Test;
 import spoon.processing.ProcessingManager;
@@ -48,7 +48,7 @@ public class TaggletStatementDetectorTest {
         ArrayList<Tagglet> tagglets = getTaggletsList(CLASS_NAME);
 
         TaggedStatementDetector p = process(this.getClass().getResource("/input_sources").toURI().getPath(), tagglets);
-        List<SourceCodeSnippet> benchs = p.getSnippets();
+        List<BenchSnippet> benchs = p.getSnippets();
 
         assertEquals(2, benchs.size());
         assertTrue(p.getTagglets().containsKey(benchs.get(0).getClassName()));

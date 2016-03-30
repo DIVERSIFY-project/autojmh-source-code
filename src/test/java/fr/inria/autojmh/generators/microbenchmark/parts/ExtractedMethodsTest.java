@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators.microbenchmark.parts;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import org.junit.Test;
 import spoon.reflect.code.CtIf;
 import spoon.reflect.code.CtReturn;
@@ -28,7 +28,7 @@ public class ExtractedMethodsTest {
      * @throws Exception if something goes wrong
      */
     private String buildCode(boolean replace, String method, Class<?> klass) throws Exception {
-        List<SourceCodeSnippet> list = loadSnippets(this, method, klass);
+        List<BenchSnippet> list = loadSnippets(this, method, klass);
         if (replace) {
             SnippetCode snippetCode = new SnippetCode();
             snippetCode.generate(list.get(0));

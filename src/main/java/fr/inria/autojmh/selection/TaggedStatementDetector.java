@@ -1,6 +1,6 @@
 package fr.inria.autojmh.selection;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import spoon.reflect.code.CtStatement;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
@@ -125,7 +125,7 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
         snippets = new ArrayList<>();
         //Instrument the data context
         for (Map.Entry<Tagglet, CtStatement> e : getMatches().entrySet()) {
-            SourceCodeSnippet s = new SourceCodeSnippet();
+            BenchSnippet s = new BenchSnippet();
             s.setASTElement(e.getValue());
             //The Bench snippet will auto resolve its context
             //if the size of the Input access is zero, it cannot be used to avoid DCE, therefore

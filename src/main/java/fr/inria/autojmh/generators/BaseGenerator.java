@@ -1,7 +1,7 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.projectbuilders.ProjectFiles;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -52,7 +52,7 @@ public abstract class BaseGenerator implements BenchmakGenerator {
     /**
      * Snippets for which the benchmarks will be generated
      */
-    private Collection<SourceCodeSnippet> snippets;
+    private Collection<BenchSnippet> snippets;
 
     /**
      * Template path
@@ -152,12 +152,12 @@ public abstract class BaseGenerator implements BenchmakGenerator {
     }
 
     @Override
-    public void setSnippets(Collection<SourceCodeSnippet> snippets) {
+    public void setSnippets(Collection<BenchSnippet> snippets) {
         this.snippets = snippets;
     }
 
     @Override
-    public Collection<SourceCodeSnippet> getSnippets() {
+    public Collection<BenchSnippet> getSnippets() {
         return snippets;
     }
 

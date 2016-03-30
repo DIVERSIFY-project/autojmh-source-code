@@ -1,6 +1,6 @@
 package fr.inria.autojmh.selection;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.diversify.syringe.detectors.DetectionData;
 
 /**
@@ -10,17 +10,17 @@ import fr.inria.diversify.syringe.detectors.DetectionData;
  */
 public class BenchSnippetDetectionData extends DetectionData {
 
-    private SourceCodeSnippet snippet;
+    private BenchSnippet snippet;
 
-    public SourceCodeSnippet getSnippet() {
+    public BenchSnippet getSnippet() {
         return snippet;
     }
 
-    public BenchSnippetDetectionData(SourceCodeSnippet snippet) {
+    public BenchSnippetDetectionData(BenchSnippet snippet) {
         this.snippet = snippet;
     }
 
-    public void setSnippet(SourceCodeSnippet snippet) {
+    public void setSnippet(BenchSnippet snippet) {
         this.snippet = snippet;
     }
 }

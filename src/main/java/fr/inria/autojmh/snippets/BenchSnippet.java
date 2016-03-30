@@ -10,9 +10,6 @@ import org.apache.log4j.Logger;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtVariable;
-import spoon.reflect.reference.CtArrayTypeReference;
-import spoon.reflect.reference.CtLocalVariableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
@@ -20,17 +17,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import static fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes.*;
+
 /**
  * Class that represents a snippet extracted from the source code.
   * <p>
  * Created by marodrig on 27/10/2015.
  */
-public class SourceCodeSnippet implements Configurable {
+public class BenchSnippet implements Configurable {
 
     /**
      * Snippet we want to extract data context
      */
-    private static Logger log = Logger.getLogger(SourceCodeSnippet.class);
+    private static Logger log = Logger.getLogger(BenchSnippet.class);
 
 
     /**
@@ -272,12 +271,6 @@ public class SourceCodeSnippet implements Configurable {
         return mustSerializeThiz;
     }
 
-    public boolean isImplicitThiz(CtInvocation inv) {
-        return !inv.getExecutable().isStatic() &&
-                (inv.getTarget() == null || inv.getTarget().toString().equals("this")) &&
-                preconditions.checkTypeRef(inv.getExecutable().getDeclaringType());
-    }
-
     public boolean meetsPreconditions() {
         if (meetsPreconditions == null) meetsPreconditions = getPreconditions().checkSnippet(this);
         return meetsPreconditions;
@@ -335,32 +328,6 @@ public class SourceCodeSnippet implements Configurable {
         return true;
     }
 
-
-    /**
-     * Indicate if a variable access is initialized before the statement
-     */
-    private boolean isInitialized(CtVariableAccess a, CtStatement statement, InitializedVariables vars) {
-
-        //Discard all variables being declared inside the loop expression
-        //TODO: review this, sometimes the declaration is null
-        try {
-            List<CtVariable> vs = statement.getElements(new TypeFilter<CtVariable>(CtVariable.class));
-            if (a.getVariable().getDeclaration() != null) {
-                //Special cases
-                if (vs.contains(a.getVariable().getDeclaration())) return false;
-                if ((a.getVariable().getDeclaration() != null &&
-                        a.getVariable().getDeclaration().getDefaultExpression() != null)
-                        || !(a.getVariable() instanceof CtLocalVariableReference)) return true;
-            }
-        } catch (IllegalStateException ex) {
-            log.warn("Unable to evaluate the initialization special case for " + a);
-        }
-
-
-        return vars.getInitialized().contains(a.getVariable());
-    }
-
-
     /**
      * One var can be pointed by multiples accesses. This method leaves only one access per variable in the list
      */
@@ -380,43 +347,6 @@ public class SourceCodeSnippet implements Configurable {
         return access;
     }
 
-    /**
-     * Indicate if the variable access is a field of type primitive(int, float, byte, etc) array
-     */
-    private boolean isFieldOfPrimitiveArray(CtVariableAccess a) {
-        boolean result = false;
-        if (a instanceof CtFieldAccess) {
-            CtFieldAccess field = (CtFieldAccess) a;
-            result = field.getTarget() instanceof CtVariableAccess;
-            result = result && ((CtVariableAccess) field.getTarget()).getVariable().getType() instanceof CtArrayTypeReference;
-            if (result) {
-                CtArrayTypeReference arrayRef =
-                        (CtArrayTypeReference) ((CtVariableAccess) field.getTarget()).getVariable().getType();
-                result = arrayRef.getComponentType().isPrimitive();
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * Indicate whether 'a' is a variable declared inside the statement being benchmarked
-     */
-    private boolean isLocalVariable(CtVariableAccess a, List<CtLocalVariable> localVars) {
-        for (CtLocalVariable lv : localVars) {
-            if (lv.getReference().equals(a.getVariable())) {
-                return true;
-            } else if (a instanceof CtFieldAccess) {
-                //Fields of local variables
-                CtFieldAccess fd = (CtFieldAccess) a;
-                if (fd.getTarget() != null && fd.getTarget() instanceof CtVariableAccess &&
-                        lv.getReference().equals(((CtVariableAccess) fd.getTarget()).getVariable())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     @Override
     public void configure(AJMHConfiguration configuration) {

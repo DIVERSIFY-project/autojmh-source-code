@@ -3,7 +3,7 @@ package fr.inria.autojmh.generators.microbenchmark;
 import fr.inria.autojmh.ElementProvider;
 import fr.inria.autojmh.generators.BenchmarkTest;
 import fr.inria.autojmh.instrument.DataContextFileChooser;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,14 +39,14 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
         }
     }
 
-    SourceCodeSnippet snippet;
+    BenchSnippet snippet;
 
     @Before
     public void setup() throws Exception {
         snippet = buildSignalLoop();
     }
 
-    private String buildOutput(SourceCodeSnippet snippet) throws URISyntaxException {
+    private String buildOutput(BenchSnippet snippet) throws URISyntaxException {
         AJMHConfiguration configuration = new AJMHConfiguration();
         configuration.setWorkingDir(getTestPath(this, "testproject"));
         configuration.setPackageName("fr.inria.testproject.context");

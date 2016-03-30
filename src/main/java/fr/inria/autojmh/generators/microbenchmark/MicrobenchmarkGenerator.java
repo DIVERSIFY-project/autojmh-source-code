@@ -5,7 +5,7 @@ import fr.inria.autojmh.generators.BaseGenerator;
 import fr.inria.autojmh.generators.microbenchmark.parts.SnippetCode;
 import fr.inria.autojmh.generators.microbenchmark.parts.ExtractedMethods;
 import fr.inria.autojmh.instrument.DataContextFileChooser;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.controlflow.AllBranchesReturn;
@@ -48,7 +48,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
      *
      * @throws java.io.FileNotFoundException
      */
-    public void generate(SourceCodeSnippet snippet) {
+    public void generate(BenchSnippet snippet) {
 
         if (!getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName()))
             return;
@@ -93,7 +93,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         generatedCount++;
     }
 
-    private String getDefaultReturn(SourceCodeSnippet snippet) {
+    private String getDefaultReturn(BenchSnippet snippet) {
         //Check if the return is actually needed
         AllBranchesReturn branchesReturn = new AllBranchesReturn();
         if (branchesReturn.execute(snippet.getASTElement())) return null;
@@ -170,7 +170,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
 
     @Override
     public void generate() {
-        for (SourceCodeSnippet snippet : getSnippets()) {
+        for (BenchSnippet snippet : getSnippets()) {
             generate(snippet);
         }
     }

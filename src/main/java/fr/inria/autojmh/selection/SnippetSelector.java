@@ -1,6 +1,6 @@
 package fr.inria.autojmh.selection;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.Preconditions;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.Configurable;
@@ -22,11 +22,11 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
     /**
      * Resulting snippets
      */
-    protected List<SourceCodeSnippet> snippets;
+    protected List<BenchSnippet> snippets;
 
     protected Preconditions preconditions;
 
-    public List<SourceCodeSnippet> getSnippets() {
+    public List<BenchSnippet> getSnippets() {
         if ( snippets == null ) snippets = new ArrayList<>();
         return snippets;
     }
@@ -37,7 +37,7 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
     }
 
     public void select(E e) {
-        SourceCodeSnippet s = new SourceCodeSnippet();
+        BenchSnippet s = new BenchSnippet();
         s.setPreconditions(preconditions);
         s.setASTElement(e);
         if (snippets == null) snippets = new ArrayList<>();
@@ -46,7 +46,7 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
 
     @Override
     public void processingDone() {
-        for (SourceCodeSnippet s : getSnippets()) {
+        for (BenchSnippet s : getSnippets()) {
             BenchSnippetDetectionData data = new BenchSnippetDetectionData(s);
             notify(SNIPPET_DETECTED, s.getASTElement(), data);
         }

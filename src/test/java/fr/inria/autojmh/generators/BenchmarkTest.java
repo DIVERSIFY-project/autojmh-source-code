@@ -1,7 +1,7 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.ResourcesPaths;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.diversify.syringe.SpoonMetaFactory;
 import spoon.processing.AbstractProcessor;
@@ -22,7 +22,7 @@ import static fr.inria.autojmh.ResourcesPaths.getTestPath;
  */
 public class BenchmarkTest {
 
-    SourceCodeSnippet snippet;
+    BenchSnippet snippet;
 
     protected AJMHConfiguration buildGenerationConf() throws URISyntaxException {
         AJMHConfiguration configuration = new AJMHConfiguration();
@@ -34,9 +34,9 @@ public class BenchmarkTest {
         return configuration;
     }
 
-    protected SourceCodeSnippet buildSignalLoop() throws Exception {
+    protected BenchSnippet buildSignalLoop() throws Exception {
 
-        snippet = new SourceCodeSnippet();
+        snippet = new BenchSnippet();
 
         //Initialize the CtElements
 

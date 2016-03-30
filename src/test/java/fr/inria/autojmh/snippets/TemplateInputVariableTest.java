@@ -19,7 +19,7 @@ public class TemplateInputVariableTest {
     @Test
     public void testGetCompilableName() throws Exception {
 
-        SourceCodeSnippet snippet = loadFirstSnippets(this, "anIntMethod", CtAssignment.class);
+        BenchSnippet snippet = loadFirstSnippets(this, "anIntMethod", CtAssignment.class);
 
         //We don't use the get Accesses method because is to heavy in logic
         List<CtVariableAccess> vars = snippet.getASTElement().getElements(

@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class MainClassGeneratorTest extends BenchmarkTest {
         MainClassGenerator generator = new MainClassGenerator();
         generator.setWriteToFile(false);
         generator.configure(buildGenerationConf());
-        ArrayList<SourceCodeSnippet> loops = new ArrayList<SourceCodeSnippet>();
+        ArrayList<BenchSnippet> loops = new ArrayList<BenchSnippet>();
         loops.add(snippet);
         generator.setSnippets(loops);
         //Runtime context

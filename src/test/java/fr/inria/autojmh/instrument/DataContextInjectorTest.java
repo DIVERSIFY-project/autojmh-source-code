@@ -1,7 +1,7 @@
 package fr.inria.autojmh.instrument;
 
 import fr.inria.autojmh.selection.BenchSnippetDetectionData;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.diversify.syringe.SpoonMetaFactory;
 import org.junit.Test;
 import spoon.processing.AbstractProcessor;
@@ -24,7 +24,7 @@ public class DataContextInjectorTest {
         testCollections(CtLoop.class, method, expected, nonExpected);
     }
     private void testCollections(Class<?> klass, String method, String expected, String... nonExpected) throws Exception {
-        SourceCodeSnippet snippet = loadFirstSnippets(this, method, klass);
+        BenchSnippet snippet = loadFirstSnippets(this, method, klass);
         BenchSnippetDetectionData dd = new BenchSnippetDetectionData(snippet);
         //Finally inject
         DataContextInjector injector = new DataContextInjector();
@@ -98,7 +98,7 @@ public class DataContextInjectorTest {
         pm.process();
 
         //Build a detection data for this injector
-        BenchSnippetDetectionData dd = new BenchSnippetDetectionData(new SourceCodeSnippet());
+        BenchSnippetDetectionData dd = new BenchSnippetDetectionData(new BenchSnippet());
         dd.getSnippet().setASTElement(s[0]);
 
         //Finally inject

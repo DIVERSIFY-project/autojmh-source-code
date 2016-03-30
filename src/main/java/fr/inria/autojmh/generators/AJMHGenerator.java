@@ -5,7 +5,7 @@ import fr.inria.autojmh.instrument.DataContextInstrumenter;
 import fr.inria.autojmh.projectbuilders.Maven.MavenProjectBuilder;
 import fr.inria.autojmh.projectbuilders.ProjectFiles;
 import fr.inria.autojmh.selection.*;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.InstrumentationCleaner;
 import org.apache.log4j.Logger;
@@ -36,7 +36,7 @@ public class AJMHGenerator implements BenchmakGenerator {
     /**
      * snippets provided by the user
      */
-    private Collection<SourceCodeSnippet> snippets;
+    private Collection<BenchSnippet> snippets;
 
 
     private SnippetSelector customDetector;
@@ -54,7 +54,7 @@ public class AJMHGenerator implements BenchmakGenerator {
      *
      * @param generator
      */
-    public void runGenerators(BaseGenerator generator, Collection<SourceCodeSnippet> snippets) {
+    public void runGenerators(BaseGenerator generator, Collection<BenchSnippet> snippets) {
         generator.setWriteToFile(true);
         generator.setSnippets(snippets);
         generator.configure(conf);
@@ -62,12 +62,12 @@ public class AJMHGenerator implements BenchmakGenerator {
     }
 
     @Override
-    public void setSnippets(Collection<SourceCodeSnippet> snippets) {
+    public void setSnippets(Collection<BenchSnippet> snippets) {
         this.snippets = snippets;
     }
 
     @Override
-    public Collection<SourceCodeSnippet> getSnippets() {
+    public Collection<BenchSnippet> getSnippets() {
         return this.snippets;
     }
 
@@ -111,11 +111,11 @@ public class AJMHGenerator implements BenchmakGenerator {
 
             //Instrument all tagged points to record the data context
             log.info("Instrumenting data context");
-            List<SourceCodeSnippet> snippets = recordDataContext(tagglets);
+            List<BenchSnippet> snippets = recordDataContext(tagglets);
 
             log.info("Removing non compliant snippets");
-            List<SourceCodeSnippet> complyingSnippets = new ArrayList<>();
-            for (SourceCodeSnippet snippet : snippets) {
+            List<BenchSnippet> complyingSnippets = new ArrayList<>();
+            for (BenchSnippet snippet : snippets) {
                 if (snippet.meetsPreconditions()) complyingSnippets.add(snippet);
             }
             log.info("Total snippets: " + snippets.size());
@@ -162,7 +162,7 @@ public class AJMHGenerator implements BenchmakGenerator {
     /**
      * Cleans the instrumentation out of the AST of the project
      */
-    private void cleanInstrumentation(List<SourceCodeSnippet> snippets) {
+    private void cleanInstrumentation(List<BenchSnippet> snippets) {
         new InstrumentationCleaner().cleanUp(snippets);
     }
 
@@ -172,7 +172,7 @@ public class AJMHGenerator implements BenchmakGenerator {
      * @param tagglets A map of tagglets
      * @return
      */
-    private List<SourceCodeSnippet> recordDataContext(Map<String, List<Tagglet>> tagglets) throws Exception {
+    private List<BenchSnippet> recordDataContext(Map<String, List<Tagglet>> tagglets) throws Exception {
         log.info("Identifying annotated statements - BEGIN");
 
         if (customDetector == null) {

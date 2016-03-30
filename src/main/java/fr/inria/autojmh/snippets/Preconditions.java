@@ -88,7 +88,7 @@ public class Preconditions implements Configurable {
      * Indicate whether we can extract the segment into a parts or not.
      * An snippet must meet certain preconditions.
      */
-    public boolean checkSnippet(SourceCodeSnippet snippet) {
+    public boolean checkSnippet(BenchSnippet snippet) {
         int depth = conf == null ? 5 : conf.getMethodExtractionDepth();
         if (snippet.getASTElement() == null) return incCause(UNEXPECTED_ERR);
         if (!allVariablesAreSupported(snippet)) return incCause(VARS_UNSUPPORTED);
@@ -104,7 +104,7 @@ public class Preconditions implements Configurable {
      * @param snippet Snippet to check
      * @return
      */
-    private boolean allVariablesAreSupported(SourceCodeSnippet snippet) {
+    private boolean allVariablesAreSupported(BenchSnippet snippet) {
         HashSet<CtVariableAccess> accesses = snippet.getInitialized();
         try {
             for (CtVariableAccess a : accesses)

@@ -1,6 +1,6 @@
 package fr.inria.autojmh.generators;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.Configurable;
 
 import java.util.Collection;
@@ -14,12 +14,12 @@ public interface BenchmakGenerator extends Configurable {
      *
      * @param snippets
      */
-    void setSnippets(Collection<SourceCodeSnippet> snippets);
+    void setSnippets(Collection<BenchSnippet> snippets);
 
     /**
      * Collections of snippets
      */
-    Collection<SourceCodeSnippet> getSnippets();
+    Collection<BenchSnippet> getSnippets();
 
     /**
      * Generate output

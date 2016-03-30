@@ -3,7 +3,7 @@ package fr.inria.autojmh.generators.microbenchmark.parts;
 import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtInvocationDecorator;
 import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtVariableAccessDecorator;
 import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.Configurable;
 import org.apache.log4j.Logger;
@@ -34,7 +34,7 @@ public class SnippetCode extends AbstractMicrobenchmarkPart implements Configura
      * @param snippet Snippet to be transformed
      */
     @Override
-    public String generate(SourceCodeSnippet snippet) {
+    public String generate(BenchSnippet snippet) {
         transformed = snippet.getASTElement();
         replace(transformed, deep, snippet);
         AJMHPrettyPrinter printer = new AJMHPrettyPrinter(snippet.getASTElement().getFactory().getEnvironment());
@@ -46,7 +46,7 @@ public class SnippetCode extends AbstractMicrobenchmarkPart implements Configura
      * Replaces recursively all invocations in the statement in the snippet with an invocation stub with a pretty print
      * It goes inside the method bodies when it can and recursively replaces invocations
      */
-    private void replace(CtElement st, int deep, SourceCodeSnippet snippet) {
+    private void replace(CtElement st, int deep, BenchSnippet snippet) {
         if (deep <= 0) return;
         deep--;
 

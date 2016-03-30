@@ -1,7 +1,7 @@
 package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.instrument.DataContextFileChooser;
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import org.apache.log4j.Logger;
 
@@ -21,7 +21,7 @@ public class TestForMicrobenchmarkGenerator extends BaseGenerator {
     private DataContextFileChooser chooser;
     private Logger log = Logger.getLogger(TestForMicrobenchmarkGenerator.class);
 
-    public void generate(SourceCodeSnippet snippet) {
+    public void generate(BenchSnippet snippet) {
 
         if (!getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName())) return;
 
@@ -58,7 +58,7 @@ public class TestForMicrobenchmarkGenerator extends BaseGenerator {
 
     @Override
     public void generate() {
-        for (SourceCodeSnippet snippet : getSnippets()) {
+        for (BenchSnippet snippet : getSnippets()) {
             generate(snippet);
         }
     }

@@ -1,6 +1,6 @@
 package fr.inria.autojmh.snippets.modelattrib;
 
-import fr.inria.autojmh.snippets.SourceCodeSnippet;
+import fr.inria.autojmh.snippets.BenchSnippet;
 import org.junit.Test;
 import spoon.reflect.code.*;
 import spoon.reflect.reference.CtTypeReference;
@@ -38,7 +38,7 @@ public class TypeAttributesTest {
     };
 
     private void testProperty(String method, Class<?> klass, boolean expected, RefCall real) throws Exception {
-        List<SourceCodeSnippet> list = loadSnippets(this, method, klass);
+        List<BenchSnippet> list = loadSnippets(this, method, klass);
         CtTypeReference ref = list.get(0).getAccesses().get(0).getType();
         assertEquals(expected, real.call(ref));
     }
@@ -50,7 +50,7 @@ public class TypeAttributesTest {
 
     @Test
     public void testIsClassPrimitive_True() throws Exception {
-        List<SourceCodeSnippet> list = loadSnippets(this, "containOnlyPrimitiveClasses", CtExpression.class);
+        List<BenchSnippet> list = loadSnippets(this, "containOnlyPrimitiveClasses", CtExpression.class);
         for (CtVariableAccess a : list.get(0).getAccesses())
             assertTrue(new TypeAttributes(a.getType()).isClassPrimitive());
     }

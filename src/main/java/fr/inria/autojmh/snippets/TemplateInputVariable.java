@@ -67,7 +67,7 @@ public class TemplateInputVariable {
     private String packageQualifiedName;
 
 
-    private void doInitialize(SourceCodeSnippet parent, CtTypeReference typeRef) {
+    private void doInitialize(BenchSnippet parent, CtTypeReference typeRef) {
 
         TypeAttributes refAttr = new TypeAttributes(typeRef);
 
@@ -127,13 +127,13 @@ public class TemplateInputVariable {
      * @param parent
      * @param access
      */
-    public void initialize(SourceCodeSnippet parent, CtVariableAccess access) {
+    public void initialize(BenchSnippet parent, CtVariableAccess access) {
         this.setInitialized(parent.getInitialized().contains(access));
         this.setVariableAccess(access);
         doInitialize(parent, access.getVariable().getType());
     }
 
-    public void initializeAsThiz(SourceCodeSnippet parent) {
+    public void initializeAsThiz(BenchSnippet parent) {
         setInitialized(true);
         setVariableAccess(null);
         setVariableName("this");
