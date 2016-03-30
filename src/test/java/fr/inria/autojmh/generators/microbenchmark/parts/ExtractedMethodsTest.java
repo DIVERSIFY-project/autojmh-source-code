@@ -9,7 +9,7 @@ import java.util.List;
 
 import static fr.inria.autojmh.ElementProvider.loadSnippets;
 import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -20,15 +20,16 @@ public class ExtractedMethodsTest {
 
     /**
      * Generates code using the ExtractedMethod part
+     *
      * @param replace Whether invocations should be replaced or not
-     * @param method Method to extract methods
-     * @param klass CtElement class to pick inside the method
+     * @param method  Method to extract methods
+     * @param klass   CtElement class to pick inside the method
      * @return The generated code
      * @throws Exception if something goes wrong
      */
     private String buildCode(boolean replace, String method, Class<?> klass) throws Exception {
         List<BenchSnippet> list = loadSnippets(this, method, klass);
-        if ( replace ) {
+        if (replace) {
             SnippetCode snippetCode = new SnippetCode();
             snippetCode.generate(list.get(0));
         }
@@ -65,8 +66,13 @@ public class ExtractedMethodsTest {
     @Test
     public void testGenerate_StaticMethod() throws Exception {
         String code = buildCode(false, "callStatic", CtReturn.class);
-        assertTrue(code.contains("private static int privateStaticMethod(int x)"));
+        assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod(int x)"));
         assertTrue(code.contains("privateStaticMethod((x + (x * 90)"));
+    }
+
+    @Test
+    public void testGenerate_StaticMethod_Public() throws Exception {
+        fail();
     }
 
     /**
@@ -75,10 +81,10 @@ public class ExtractedMethodsTest {
     @Test
     public void testGenerate_InvocationsReplaced_StaticMethod() throws Exception {
         String code = buildCode(true, "callStatic", CtReturn.class);
-        assertTrue(code.contains("private static int privateStaticMethod(int x)"));
+        assertTrue(code.contains("private static int fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod(int x)"));
         //This is not a dynamic method, must stay the same
-        assertFalse(code.contains("private static void privateStaticMethod(fr.inria.testproject.context.DataContextPlayGround"));
-        assertTrue(code.contains("privateStaticMethod((x + (x * 90)"));
+        assertFalse(code.contains("privateStaticMethod(fr.inria.testproject.context.DataContextPlayGround"));
+        assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod((x + (x * 90)"));
     }
 
     /**

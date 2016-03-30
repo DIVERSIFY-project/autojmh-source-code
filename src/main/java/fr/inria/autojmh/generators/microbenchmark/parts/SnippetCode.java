@@ -16,7 +16,7 @@ import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.List;
 
-import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.targetIsThis;
+import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.invocationTargetIsThis;
 import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.visibility;
 
 /**
@@ -67,7 +67,7 @@ public class SnippetCode extends AbstractMicrobenchmarkPart implements Configura
             ModifierKind m = visibility(inv);
             if (!(inv instanceof CtInvocationDecorator) &&
                     //We must replace protected/private methods and public methods calling 'this'
-                    (targetIsThis(inv) || m != ModifierKind.PUBLIC)) {
+                    (invocationTargetIsThis(inv) || m != ModifierKind.PUBLIC)) {
                 CtInvocationDecorator invDeco = new CtInvocationDecorator(inv);
                 invDeco.setParent(inv.getParent());
                 inv.replace(invDeco);

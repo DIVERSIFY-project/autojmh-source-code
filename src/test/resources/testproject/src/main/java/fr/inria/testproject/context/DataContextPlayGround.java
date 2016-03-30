@@ -1,6 +1,7 @@
 package fr.inria.testproject.context;
 
 import java.util.List;
+import java.lang.Math;
 
 /**
  * Created by marcel on 23/02/14.
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public abstract class DataContextPlayGround {
 
-    int field1;
+    private int field1;
 
     //A dummy Add procedure to test some logic branches
     public int arrayOfObjects(Object... values) {
@@ -41,13 +42,17 @@ public abstract class DataContextPlayGround {
         return seris.length;
     }
 
+    public int field2;
+
     //A dummy procedure to test return types
-    public int anIntMethod() {
-        if (field1 != 0) {
+    public int anIntMethod(DataContextPlayGround ground) {
+        while (ground.field1 < 100) ground.field1++;
+
+        if (field2 != 0) {
             field1 = 0;
             return field1;
         }
-        return field1++;
+        return 0;
     }
 
     //------------------------ PRECONDITIONS TEST --------------------------
@@ -72,8 +77,6 @@ public abstract class DataContextPlayGround {
     //------------------------ PRECONDITIONS TEST --------------------------
 
 
-
-
     //------------------------ TYPE ATTRIBUTES --------------------------
     //A method that contains only primitive classes to test TypeAttributes
     public String containOnlyPrimitiveClasses(Double b, Integer a) {
@@ -81,80 +84,93 @@ public abstract class DataContextPlayGround {
         String s = b.toString();
         return s;
     }
+
     //A method to try the TypeAttribute detection of serializables
     public void containOnlySerializables(SerializableInterface b) {
         b.doSomething();
     }
+
     protected void containOnlyCollections(List<Integer> b) {
         b.clear();
     }
+
     public int containOnlyArrays(int[] b) {
         return b.length;
     }
     //------------------------ TYPE ATTRIBUTES --------------------------
 
 
-
-
     //------------------------ METHOD ATTRIBUTES --------------------------
     private int callPrivate(boolean k) {
         return callPrivate(k);
     }
+
     private int callPrivate() {
         return callPrivate();
     }
 
-    public int callPublic(  boolean k ) {
+    public int callPublic(boolean k) {
         return callPublic(k);
     }
+
     protected int callProtected() {
         return callProtected();
     }
     //------------------------ METHOD ATTRIBUTES --------------------------
 
 
+    //------------------------ SnippetCode ATTRIBUTES --------------------------
 
+    private static int CONSTANT = 1;
 
-    //------------------------ DecoratorTransoformation ATTRIBUTES --------------------------
+    public static int CONSTANT2 = 2;
+
     private static int privateStaticMethod(int x) {
-        if ( x > 100 ) return x;
+        if (x > 100) return CONSTANT;
+        else x = CONSTANT2;
         return privateStaticMethod(x + x * 90);
     }
 
-    public int callStatic( int bb ) {
+    public SerializableObject callSerializable(SerializableObject seri) {
+        if (Math.abs(seri.values) != seri.values) return null;
+        return seri;
+    }
+
+    public int callNonSerializable(AbstractClass seri) {
+        return seri.pubNonSerializable;
+    }
+
+    public int callStatic(int bb) {
         return privateStaticMethod(bb);
     }
 
-    public void callInvocations( boolean bb ) {
-        if ( bb ) {
+    public void callInvocations(boolean bb) {
+        if (bb) {
             callPrivate();
             callProtected();
-            //callPublic();
         } else callProtected();
     }
 
-    public void callInvocationsSomePublic( boolean bb ) {
-        if ( bb ) {
+    public void callInvocationsSomePublic(boolean bb) {
+        if (bb) {
             callPrivate(bb);
             callProtected();
-            //callPublic();
         } else callPublic(bb);
     }
 
     protected abstract void protectedAbsctractMethod();
 
-    public void callProtectedAbstractMethod( boolean bb ) {
-        if ( bb ) {
+    public void callProtectedAbstractMethod(boolean bb) {
+        if (bb) {
             callPrivate();
             callProtected();
-            //callPublic();
         } else protectedAbsctractMethod();
     }
 
     public int callPublicAbstractMethod(AbstractClass ac) {
         return ac.abstractMethod();
     }
-    //------------------------ DecoratorTransoformation ATTRIBUTES --------------------------
+    //------------------------ SnippetCode ATTRIBUTES --------------------------
 
 
     //------------------------ INJECTORS --------------------------
@@ -190,7 +206,9 @@ public abstract class DataContextPlayGround {
         int result = 0;
         for (int i = 0; i < values.length; i++) {
             if (values[i] != null) result++;
-            else { return 0; }
+            else {
+                return 0;
+            }
         }
         return values.length;
     }

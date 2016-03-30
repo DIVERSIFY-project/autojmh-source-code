@@ -1,17 +1,22 @@
 package fr.inria.autojmh.generators.printer;
 
 import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtInvocationDecorator;
+import fr.inria.autojmh.generators.microbenchmark.parts.substitutes.CtVariableAccessDecorator;
 import spoon.Launcher;
 import spoon.compiler.Environment;
 import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtInvocation;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.CtType;
-import spoon.reflect.declaration.ModifierKind;
+import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 
+import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.fieldTargetIsThis;
 import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.visibility;
+import static fr.inria.autojmh.snippets.modelattrib.TypeAttributes.isSerializable;
+import static spoon.reflect.declaration.ModifierKind.PUBLIC;
+import static spoon.reflect.declaration.ModifierKind.STATIC;
 
 /**
  * Created by marodrig on 24/03/2016.
@@ -27,24 +32,108 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
         super(env);
     }
 
+    public <T> void visitCtVariableAccess(CtVariableAccess<T> variableAccess) {
+        try {
+            boolean isField = variableAccess instanceof CtFieldAccess ||
+                    (variableAccess instanceof CtVariableAccessDecorator &&
+                            ((CtVariableAccessDecorator) variableAccess).isField());
+            CtVariable var = null;
+            CtFieldAccess access = null;
+            if (isField) {
+
+                access = (CtFieldAccess) (variableAccess instanceof CtVariableAccessDecorator ?
+                        ((CtVariableAccessDecorator) variableAccess).getWrap() : variableAccess);
+                var = access.getVariable().getDeclaration();
+
+                //CONSTANT OR NOT CONSTANT
+                if (access.getVariable().isStatic()) {
+
+                    //PUBLIC OR PRIVATE CONSTANT
+                    if (var == null || var.getModifiers().contains(PUBLIC)) {
+                        super.visitCtVariableAccess(variableAccess);
+                    } else {
+                        enterCtExpression(variableAccess);
+                        write(access.getParent(CtClass.class).getQualifiedName().replace(".", "_"));
+                        write("_");
+                        write(variableAccess.getVariable().getSimpleName());
+                        exitCtExpression(variableAccess);
+                    }
+
+
+                } else {
+                    //NOT CONSTANT:
+
+                    //PUBLIC OR PRIVATE FIELD
+                    if (var == null || var.getModifiers().contains(PUBLIC)) {
+                        if (isSerializable(access.getType())) {
+                            //TARGET THIZ OR NOT
+                            if (fieldTargetIsThis(access)) {
+                                enterCtExpression(variableAccess);
+                                write("THIZ.");
+                                write(variableAccess.getVariable().getSimpleName());
+                                exitCtExpression(variableAccess);
+                            } else {
+                                enterCtExpression(variableAccess);
+                                scan(access.getTarget());
+                                write(".");
+                                write(variableAccess.getVariable().getSimpleName());
+                                exitCtExpression(variableAccess);
+                            }
+                        } else {
+                            enterCtExpression(variableAccess);
+                            scan(access.getTarget());
+                            write("_");
+                            write(variableAccess.getVariable().getSimpleName());
+                            exitCtExpression(variableAccess);
+                        }
+                    } else {
+                        if (fieldTargetIsThis(access)) {
+                            enterCtExpression(variableAccess);
+                            write("THIZ_");
+                            write(variableAccess.getVariable().getSimpleName());
+                            exitCtExpression(variableAccess);
+                        } else {
+                            //TODO: This may fail if the target is not a variable.
+                            enterCtExpression(variableAccess);
+                            scan(access.getTarget());
+                            write("_");
+                            write(variableAccess.getVariable().getSimpleName());
+                            exitCtExpression(variableAccess);
+                        }
+                    }
+                }
+            } else {
+                super.visitCtVariableAccess(variableAccess);
+            }
+
+        } catch (NullPointerException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     /**
      * Prints the method modifieds including the THIZ parameter
      */
     public <T> void visitCtMethod(CtMethod<T> m) {
-        if (m.getModifiers().contains(ModifierKind.STATIC)) {
-            super.visitCtMethod(m);
-            return;
-        }
+        boolean isStatic = m.getModifiers().contains(STATIC);
 
         visitCtNamedElement(m);
         writeGenericsParameter(m.getFormalTypeParameters());
         scan(m.getType());
         write(" ");
+        if (isStatic) {
+            if (visibility(m) != ModifierKind.PUBLIC) {
+                write(m.getDeclaringType().getQualifiedName().replace(".", "_"));
+                write("_");
+            } else write(m.getDeclaringType().getQualifiedName());
+        }
         write(m.getSimpleName());
         write("(");
-        write(m.getDeclaringType().getQualifiedName());
-        write(" THIZ");
-        if (m.getParameters().size() > 0) write(",");
+        if (!isStatic) {
+            write(m.getDeclaringType().getQualifiedName());
+            write(" THIZ");
+            if (m.getParameters().size() > 0) write(",");
+        }
         writeExecutableParameters(m);
         write(")");
         writeThrowsClause(m);
@@ -75,7 +164,7 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
 
     @Override
     public <T> void visitCtInvocation(CtInvocation<T> invocation) {
-        if (!(invocation instanceof CtInvocationDecorator) || invocation.getExecutable().isStatic()) {
+        if (!(invocation instanceof CtInvocationDecorator)) {
             super.visitCtInvocation(invocation);
             return;
         }
@@ -112,9 +201,13 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
             if (invocation.getExecutable().isStatic()) {
                 try {
                     CtTypeReference<?> type = invocation.getExecutable().getDeclaringType();
-                    String typeName = type.toString().replace(".", "_");
-                    write(typeName);
-                    write("_");
+                    if ( visibility(invocation) != ModifierKind.PUBLIC ) {
+                        write(type.toString().replace(".", "_"));
+                        write("_");
+                    } else {
+                        write(type.toString());
+                        write(".");
+                    }
                 } catch (Exception e) {
                     Launcher.logger.error(e.getMessage(), e);
                 }
@@ -140,11 +233,12 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
                 if (removeLastChar) removeLastChar();
                 write(">");
             }
-            if (modifier == ModifierKind.PUBLIC) write("THIZ.");
+            if (modifier == PUBLIC && !invocation.getExecutable().isStatic())
+                write("THIZ.");
             write(invocation.getExecutable().getSimpleName());
         }
 
-        if (visibility(invocation) != ModifierKind.PUBLIC) {
+        if (visibility(invocation) != PUBLIC && !invocation.getExecutable().isStatic()) {
             write("(");
             if (target != null) write(target);
             for (CtExpression<?> e : invocation.getArguments()) {
@@ -153,7 +247,7 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
             }
         } else {
             write("(");
-            if ( invocation.getArguments().size() > 0 ) scan(invocation.getArguments().get(0));
+            if (invocation.getArguments().size() > 0) scan(invocation.getArguments().get(0));
             for (int i = 1; i < invocation.getArguments().size(); i++) {
                 write(",");
                 scan(invocation.getArguments().get(0));

@@ -11,6 +11,9 @@ public class SerializableObject implements SerializableInterface {
 
     int values;
 
+
+    public SerializableObject pubField;
+
     public int getValues() {
         return values;
     }

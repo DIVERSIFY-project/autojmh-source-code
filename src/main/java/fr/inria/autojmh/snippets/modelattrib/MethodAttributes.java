@@ -1,10 +1,7 @@
 package fr.inria.autojmh.snippets.modelattrib;
 
 import org.apache.log4j.Logger;
-import spoon.reflect.code.CtBlock;
-import spoon.reflect.code.CtInvocation;
-import spoon.reflect.code.CtNewClass;
-import spoon.reflect.code.CtVariableAccess;
+import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
@@ -42,7 +39,15 @@ public class MethodAttributes {
         this.element = e;
     }
 
-    public static boolean targetIsThis(CtInvocation inv) {
+    public static boolean fieldTargetIsThis(CtFieldAccess field) {
+        if ( field.getTarget() == null ) return true;
+        if (field.getTarget() instanceof CtVariableAccess) {
+            return ((CtVariableAccess) field.getTarget()).getVariable().getSimpleName().equals("this");
+        }
+        return false;
+    }
+
+    public static boolean invocationTargetIsThis(CtInvocation inv) {
         if ( inv.getTarget() == null ) return true;
         if (inv.getTarget() instanceof CtVariableAccess) {
             return inv.getTarget().toString().equals("this");

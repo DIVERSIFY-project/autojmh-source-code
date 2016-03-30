@@ -2,6 +2,7 @@ package fr.inria.autojmh.generators.microbenchmark.parts.substitutes;
 
 import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import spoon.reflect.code.CtCodeElement;
+import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtAnnotation;
@@ -9,6 +10,7 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtSimpleType;
 import spoon.reflect.declaration.ParentNotInitializedException;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.reference.CtVariableReference;
@@ -25,6 +27,10 @@ import java.util.Set;
  * Created by marodrig on 24/03/2016.
  */
 public class CtVariableAccessDecorator extends CtVariableAccessImpl {
+
+    public CtVariableAccess getWrap() {
+        return wrap;
+    }
 
     private final CtVariableAccess wrap;
 
@@ -193,10 +199,8 @@ public class CtVariableAccessDecorator extends CtVariableAccessImpl {
     }
 
     public void accept(CtVisitor visitor) {
-        wrap.accept(visitor);
+        visitor.visitCtVariableAccess(this);
     }
-
-
 
     public CtVariableReference getVariable() {
         return wrap.getVariable();
@@ -212,5 +216,9 @@ public class CtVariableAccessDecorator extends CtVariableAccessImpl {
 
     public void setVariable(CtVariableReference variable) {
         wrap.setVariable(variable);
+    }
+
+    public boolean isField() {
+        return wrap instanceof CtFieldAccess;
     }
 }

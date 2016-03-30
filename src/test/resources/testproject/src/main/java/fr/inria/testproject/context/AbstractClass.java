@@ -12,5 +12,7 @@ public abstract class AbstractClass {
 
    public abstract int abstractMethod();
 
+   public int pubNonSerializable;
+
 }
 

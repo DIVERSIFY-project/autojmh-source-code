@@ -12,17 +12,8 @@ import static org.junit.Assert.*;
 public class TemplateInputVariableTest {
 
     @Test
-    public void testGetIsCollection() throws Exception {
-        BenchSnippet snippet = loadFirstSnippets(this, "collectionOfSerializables", CtLoop.class);
-
-        /*
-        for (  )
-        snippet.getTemplateAccessesWrappers()*/
-
+    public void testGetCompilableName() throws Exception {
+        fail();
     }
 
-    @Test
-    public void testGetIsSerializable() throws Exception {
-
-    }
 }
