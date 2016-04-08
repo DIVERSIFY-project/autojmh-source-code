@@ -17,6 +17,7 @@ import spoon.support.reflect.code.CtNewClassImpl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * A class that holds the code to enforce the preconditions needed for a snippet in order to be selected for an
@@ -131,17 +132,35 @@ public class Preconditions implements Configurable {
                 return incCause(TYPE_IS_NOT_PUBLIC);
         }
 
-        TypeAttributes refAttr = new TypeAttributes(ref);
+        final TypeAttributes refAttr = new TypeAttributes(ref);
         if (ref instanceof CtArrayTypeReference) {
             ref = ((CtArrayTypeReference) ref).getComponentType();
             return checkTypeRef(ref);
-        } else if (refAttr.isCollection()) {
-            for (CtTypeReference args : ref.getActualTypeArguments())
-                if (!checkTypeRef(args)) return incCause(COLLECTION_OF_UNSUPPORTED_TYPE);
-            return true;
         } else {
-            if (!(ref.isPrimitive() || refAttr.isSerializable() || refAttr.isClassPrimitive()))
-                return incCause(TYPE_IS_NOT_STORABLE);
+            if (refAttr.isCollection()) {
+                for (CtTypeReference args : ref.getActualTypeArguments())
+                    if (!checkTypeRef(args)) return incCause(COLLECTION_OF_UNSUPPORTED_TYPE);
+                return true;
+            } else {
+                final CtTypeReference finalRef = ref;
+                Callable<Boolean> isSomething = new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return (!(finalRef.isPrimitive() || refAttr.isSerializable() || refAttr.isClassPrimitive()));
+                    }
+                };
+                final ExecutorService service = Executors.newSingleThreadExecutor();
+                try {
+                    final Future<Boolean> f = service.submit(isSomething);
+                    if (f.get(100, TimeUnit.MILLISECONDS))
+                        return incCause(TYPE_IS_NOT_STORABLE);
+                } catch (final TimeoutException e) {
+                    return incCause("Calculation took to long, interrupted");
+                } catch (final Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
         }
         return true;
     }
@@ -172,7 +191,7 @@ public class Preconditions implements Configurable {
         List<CtNewClassImpl> newClasses = element.getElements(new TypeFilter<CtNewClassImpl>(CtNewClassImpl.class));
         for (CtNewClassImpl n : newClasses) {
             try {
-                ModifierKind m =  visibilityOf(n);
+                ModifierKind m = visibilityOf(n);
                 if (m == ModifierKind.PRIVATE || m == ModifierKind.PROTECTED)
                     return !incCause(PRIVATE_CONSTRUCTOR);//ALWAYS EQUAL TRUE
             } catch (Exception ex) {
@@ -213,7 +232,7 @@ public class Preconditions implements Configurable {
                     } else {
                         //Checks that the target is accepted.
                         //TODO: check recursively when the target is another invocation.
-                        if ( !checkTypeRef(inv.getTarget().getType()) )
+                        if (!checkTypeRef(inv.getTarget().getType()))
                             return !incCause(DYN_METHOD_TARGET_TYPE_UNSUPPORTED);
                     }
 

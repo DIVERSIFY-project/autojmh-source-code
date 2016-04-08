@@ -28,7 +28,11 @@ public class ${class_name}_Benchmark {
     static final String DATA_FILE = "${data_file_path}";
 
 <#list input_vars as input_var>
+    <#if input_var.isAConstant == true>
+    public final ${input_var.variableTypeName} ${input_var.templateCodeCompilableName}  = ${input_var.constantValue};
+    <#else>
     public ${input_var.variableTypeName} ${input_var.templateCodeCompilableName} ;
+    </#if>
 </#list>
 
     @Setup(Level.Invocation)

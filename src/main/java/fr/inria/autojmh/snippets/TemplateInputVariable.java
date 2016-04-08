@@ -7,8 +7,15 @@ import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
+import spoon.reflect.visitor.PrettyPrinter;
+
+import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.visibility;
+import static fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes.isAConstant;
+import static spoon.reflect.declaration.ModifierKind.PUBLIC;
 
 /**
  * Class holding some meta data of a variable used in a statement needed to generate the benchmark.
@@ -20,7 +27,7 @@ public class TemplateInputVariable {
     /**
      * Name of the variable being wrapped
      */
-    String variableName;
+    private String variableName;
 
     /**
      * Method that will load the recorded value from file (loadInteger, loadFloat, etc.)
@@ -65,6 +72,8 @@ public class TemplateInputVariable {
      * Fully qualified name of the package containing the variable
      */
     private String packageQualifiedName;
+
+    private DefaultJavaPrettyPrinter printer;
 
 
     private void doInitialize(BenchSnippet parent, CtTypeReference typeRef) {
@@ -124,16 +133,14 @@ public class TemplateInputVariable {
 
     /**
      * Initializes the Template Input Variable
-     * @param parent
-     * @param access
      */
-    public void initialize(BenchSnippet parent, CtVariableAccess access) {
+    void initialize(BenchSnippet parent, CtVariableAccess access) {
         this.setInitialized(parent.getInitialized().contains(access));
         this.setVariableAccess(access);
         doInitialize(parent, access.getVariable().getType());
     }
 
-    public void initializeAsThiz(BenchSnippet parent) {
+    void initializeAsThiz(BenchSnippet parent) {
         setInitialized(true);
         setVariableAccess(null);
         setVariableName("this");
@@ -205,12 +212,35 @@ public class TemplateInputVariable {
     }
 
     /**
+     * Indicates if the variable is a constant
+     */
+    public boolean getIsAConstant() {
+        return isAConstant(variableAccess) && (visibility(variableAccess) != PUBLIC);
+    }
+
+    /**
+     * If the wrapper is wrapping a constant, tell the value
+     * @return A string with the value
+     */
+    public String getConstantValue() {
+        if ( variableAccess != null ) {
+            printer.reset();
+            printer.scan(variableAccess.getVariable().getDeclaration().getDefaultExpression());
+            return printer.toString();
+        } return "";
+    }
+
+
+    /**
      * Gets a name for a variable access that can be placed in the code of the instrumented code and compiled.
      */
     public String getInstrumentedCodeCompilableName() {
+        String result = "";
         if ( variableAccess != null )
-            return getCompilableName(variableAccess, '.');
-        else return getVariableName();
+            result = getCompilableName(variableAccess, '.');
+        else result = getVariableName();
+        if ( result.equals("THIZ") ) result = "this";
+        return result;
     }
 
     /**
@@ -218,9 +248,12 @@ public class TemplateInputVariable {
      */
     public String getTemplateCodeCompilableName() {
         if ( variableAccess != null ) {
-            AJMHPrettyPrinter printer = new AJMHPrettyPrinter(variableAccess.getFactory().getEnvironment());
+            printer.reset();
             printer.scan(variableAccess);
-            return printer.toString();
+            String result = printer.toString().replaceAll("\\(|\\)","");
+            if ( result.contains(".") )
+                throw new IllegalArgumentException("Invalid compilable name");
+            return result;
             //return getCompilableName(variableAccess, '_');
         }
         else return "THIZ";
@@ -295,5 +328,13 @@ public class TemplateInputVariable {
 
     public void setPackageQualifiedName(String packageQualifiedName) {
         this.packageQualifiedName = packageQualifiedName;
+    }
+
+    public DefaultJavaPrettyPrinter getPrinter() {
+        return printer;
+    }
+
+    public void setPrinter(DefaultJavaPrettyPrinter printer) {
+        this.printer = printer;
     }
 }

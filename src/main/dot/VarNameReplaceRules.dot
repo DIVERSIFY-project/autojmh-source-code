@@ -1,0 +1,5 @@
+digraph {
+    node[shape="box"]
+    begin -> exit [color=red]
+    begin -> allowed [color=green label="allowed"]
+}

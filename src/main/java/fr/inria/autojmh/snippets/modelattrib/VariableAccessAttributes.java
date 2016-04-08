@@ -7,13 +7,20 @@ import fr.inria.controlflow.NotFoundException;
 import fr.inria.dataflow.InitializedVariables;
 import org.apache.log4j.Logger;
 import spoon.reflect.code.*;
+import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
+import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
-import spoon.reflect.reference.CtLocalVariableReference;
+import spoon.reflect.reference.CtParameterReference;
+import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.List;
+import java.util.Set;
+
+import static spoon.reflect.declaration.ModifierKind.FINAL;
+import static spoon.reflect.declaration.ModifierKind.STATIC;
 
 /**
  * Class to determine some important high level variable accesses
@@ -43,7 +50,47 @@ public class VariableAccessAttributes {
     }
 
     /**
+     * Indicates if variable 'a' is public a field of a class that can be stored.
+     * <p>
+     * In that case we store the object and not the field
+     *
+     * @param a Variable to determine whether it must be serialized or not
+     * @return True if it must be serialized, false otherwise.
+     */
+    public static boolean canBeReplacedByTarget(CtVariableAccess a) {
+        //boolean result = !isLocalVariable(a, localVars);
+        if (a instanceof CtTargetedAccess) {
+            CtTargetedAccess access = (CtTargetedAccess) a;
+
+            CtTypeReference ref = null;
+            //This code is to get the type of the target.
+            //Spoon have so many undefined behaviors as for version 3.0,
+            //forcing to have this somehow complicated code to handle specific cases
+            if (access.getTarget() != null) {
+                ref = access.getTarget().getType();
+                if (ref == null && access.getTarget() instanceof CtFieldAccess)
+                    ref = ((CtFieldAccess) access.getTarget()).getVariable().getType();
+                if (ref == null)
+                    throw new RuntimeException("Unable to get type of " + ((CtTargetedAccess) a).getTarget().toString());
+            }
+            //if access is null then is this
+            else ref = access.getParent(CtClass.class).getReference();
+
+            try {
+                //If is a public field variable of an accepted type, it should not be stored
+                return new Preconditions().checkTypeRef(ref) &&
+                        (access.getVariable().getDeclaration() == null ||
+                                access.getVariable().getDeclaration().getVisibility() == ModifierKind.PUBLIC);
+            } catch (NullPointerException ex) {
+                return !(new Preconditions().checkTypeRef(ref));
+            }
+        }
+        return false;
+    }
+
+    /**
      * Indicate whether 'a' is a variable declared inside the statement being benchmarked
+     * Local variables are with respect to the block containing the micro benchmark. NOT WITH RESPECT TO THE METHOD
      */
     public static boolean isLocalVariable(CtVariableAccess a, List<CtLocalVariable> localVars) {
         for (CtLocalVariable lv : localVars) {
@@ -74,23 +121,71 @@ public class VariableAccessAttributes {
     }
 
     /**
-     * Indicate if a variable access is initialized before the statement.
+     * Indicates if the target of a field is allowed for storage
      *
+     * @param targetedAccess
+     * @return
+     */
+    public static boolean isTargetAllowed(CtTargetedExpression targetedAccess) {
+        if (targetedAccess.getTarget() != null) {
+            CtTypeReference ref = targetedAccess.getTarget().getType();
+            if (ref == null && targetedAccess.getTarget() instanceof CtFieldAccess)
+                ref = ((CtFieldAccess) targetedAccess.getTarget()).getVariable().getType();
+            return new Preconditions().checkTypeRef(ref);
+        } else return new Preconditions().checkTypeRef(targetedAccess.getParent(CtClass.class).getReference());
+    }
+
+    /**
+     * Indicates that the variable is an static final
+     * @param a
+     * @return
+     */
+    public static boolean isAConstant(CtVariableAccess a) {
+        try {
+            //An static final variable is indeed initialized,
+            Set<ModifierKind> ms = a.getVariable().getDeclaration().getModifiers();
+            if (ms.contains(STATIC) && ms.contains(FINAL)) return true;
+        } catch (NullPointerException ex) {
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Indicate if a variable access is initialized before the statement.
      */
     public static boolean isInitialized(CtVariableAccess a, CtStatement statement, InitializedVariables vars) {
 
         //Discard all variables being declared inside the loop expression
         //TODO: review this, sometimes the declaration is null
         try {
+
+
             List<CtVariable> vs = statement.getElements(new TypeFilter<CtVariable>(CtVariable.class));
             if (a.getVariable().getDeclaration() != null) {
                 //Special cases
                 if (vs.contains(a.getVariable().getDeclaration())) return false;
-                if ((a.getVariable().getDeclaration() != null &&
-                        a.getVariable().getDeclaration().getDefaultExpression() != null)
-                        || !(a.getVariable() instanceof CtLocalVariableReference)) return true;
             }
-        } catch (IllegalStateException ex) {
+
+            if (a.getVariable() instanceof CtParameterReference) return true;
+            if (a instanceof CtFieldAccess) {
+                CtFieldAccess ta = (CtFieldAccess) a;
+                //Is a field of 'this'
+                if (ta.getTarget() == null) return true;
+                if (ta.getTarget() != null && ta.getTarget() instanceof CtVariableAccess) {
+                    return isInitialized((CtVariableAccess) ta.getTarget(), statement, vars);
+                }
+            }
+            /*
+            List<CtVariable> vs = statement.getElements(new TypeFilter<CtVariable>(CtVariable.class));
+            if (  )
+            if (a.getVariable().getDeclaration() != null) {
+                //Special cases
+                if (vs.contains(a.getVariable().getDeclaration())) return false;
+                if (a.getVariable().getDeclaration().getDefaultExpression() != null
+                        || !(a.getVariable() instanceof CtLocalVariableReference)) return true;
+            }*/
+        } catch (IllegalStateException | NullPointerException ex) {
             log.warn("Unable to evaluate the initialization special case for " + a);
         }
 

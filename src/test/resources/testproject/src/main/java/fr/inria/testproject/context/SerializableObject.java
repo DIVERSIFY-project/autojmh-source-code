@@ -31,4 +31,29 @@ public class SerializableObject implements SerializableInterface {
     public void doSomething() {
         values = 0;
     }
+
+    //Call invocations in serializable THIZ
+    public void callInvocationsSomePublic(boolean bb) {
+        if (bb) {
+            callPrivate(bb);
+            callProtected();
+        } else callPublic(bb);
+    }
+
+    private int callPrivate(boolean k) {
+        return callPrivate(k);
+    }
+
+    private int callPrivate() {
+        return callPrivate();
+    }
+
+    public int callPublic(boolean k) {
+        return callPublic(k);
+    }
+
+    protected int callProtected() {
+        return callProtected();
+    }
+
 }

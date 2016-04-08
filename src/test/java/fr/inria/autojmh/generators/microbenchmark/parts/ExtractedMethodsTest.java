@@ -9,7 +9,6 @@ import java.util.List;
 
 import static fr.inria.autojmh.ElementProvider.loadSnippets;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -21,18 +20,20 @@ public class ExtractedMethodsTest {
     /**
      * Generates code using the ExtractedMethod part
      *
-     * @param replace Whether invocations should be replaced or not
-     * @param method  Method to extract methods
-     * @param klass   CtElement class to pick inside the method
+     * @param method Method to extract methods
+     * @param klass  CtElement class to pick inside the method
      * @return The generated code
      * @throws Exception if something goes wrong
      */
-    private String buildCode(boolean replace, String method, Class<?> klass) throws Exception {
+    private String buildCode(String method, Class<?> klass) throws Exception {
         List<BenchSnippet> list = loadSnippets(this, method, klass);
-        if (replace) {
-            SnippetCode snippetCode = new SnippetCode();
-            snippetCode.generate(list.get(0));
-        }
+        ExtractedMethods replacement = new ExtractedMethods();
+        String code = replacement.generate(list.get(0));
+        return code;
+    }
+
+    private String buildCode(String className, String method, Class<?> klass) throws Exception {
+        List<BenchSnippet> list = loadSnippets(this, method, className, klass);
         ExtractedMethods replacement = new ExtractedMethods();
         String code = replacement.generate(list.get(0));
         return code;
@@ -43,7 +44,7 @@ public class ExtractedMethodsTest {
      */
     @Test
     public void testGenerate_Dynamic_Two_Invocations_To_The_Same_Method() throws Exception {
-        String code = buildCode(false, "callInvocations", CtIf.class);
+        String code = buildCode("callInvocations", CtIf.class);
         //Count the times callProtected appears.
         //Is equal two because callProtected is recursive, hence appearing twice
         assertEquals(2, code.split("callProtected").length - 1);
@@ -53,21 +54,13 @@ public class ExtractedMethodsTest {
      * Test the correct extraction of a combination of dynamic an static methods
      */
     @Test
-    public void testGenerate_Dynamic_SomePublic() throws Exception {
-        String code = buildCode(false, "callInvocationsSomePublic", CtIf.class);
-        assertTrue(code.contains("private int callPrivate(fr.inria.testproject.context.DataContextPlayGround THIZ,boolean k) {"));
-        assertTrue(code.contains("protected int callProtected(fr.inria.testproject.context.DataContextPlayGround THIZ) {"));
-        assertFalse(code.contains("callPublic(DataContextPlayGround THIZ)"));
-    }
-
-    /**
-     * Test the correct extraction of an static method
-     */
-    @Test
-    public void testGenerate_StaticMethod() throws Exception {
-        String code = buildCode(false, "callStatic", CtReturn.class);
-        assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod(int x)"));
-        assertTrue(code.contains("privateStaticMethod((x + (x * 90)"));
+    public void testGenerate_Dynamic_SomePublic_THIZ_Not_Allowed() throws Exception {
+        String code = buildCode("callInvocationsSomePublic", CtIf.class);
+        assertTrue(code, code.contains("private int callPrivate(boolean k) {"));
+        assertTrue(code, code.contains("protected int callProtected() {"));
+        assertTrue(code, code.contains("return callProtected()"));
+        assertTrue(code, code.contains("return callPrivate(k)"));
+        assertFalse(code, code.contains("callPublic(DataContextPlayGround THIZ)"));
     }
 
     /**
@@ -75,12 +68,24 @@ public class ExtractedMethodsTest {
      */
     @Test
     public void testGenerate_InvocationsReplaced_StaticMethod() throws Exception {
-        String code = buildCode(true, "callStatic", CtReturn.class);
+        String code = buildCode("callStatic", CtReturn.class);
         assertTrue(code.contains("private static int fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod(int x)"));
         //This is not a dynamic method, must stay the same
         assertFalse(code.contains("privateStaticMethod(fr.inria.testproject.context.DataContextPlayGround"));
         assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod((x + (x * 90)"));
     }
+
+
+    /**
+     * Test the correct extraction of an static method
+     */
+    @Test
+    public void testGenerate_StaticMethod() throws Exception {
+        String code = buildCode("callStatic", CtReturn.class);
+        assertTrue(code.contains("fr_inria_testproject_context_DataContextPlayGround_privateStaticMethod(int x)"));
+        assertTrue(code.contains("privateStaticMethod((x + (x * 90)"));
+    }
+
 
     /**
      * Test the correct extraction of a combination of dynamic an static methods
@@ -88,11 +93,11 @@ public class ExtractedMethodsTest {
      */
     @Test
     public void testGenerate_InvocationsReplaced() throws Exception {
-        String code = buildCode(true, "callInvocationsSomePublic", CtIf.class);
-        assertTrue(code.contains("private int callPrivate(fr.inria.testproject.context.DataContextPlayGround THIZ,boolean"));
-        assertTrue(code.contains("return callPrivate(THIZ, k);"));
-        assertTrue(code.contains("protected int callProtected(fr.inria.testproject.context.DataContextPlayGround THIZ) {"));
-        assertTrue(code.contains("return callProtected(THIZ);"));
-        assertFalse(code.contains("callPublic(DataContextPlayGround THIZ)"));
+        String code = buildCode("SerializableObject", "callInvocationsSomePublic", CtIf.class);
+        assertTrue(code, code.contains("private int callPrivate(fr.inria.testproject.context.SerializableObject THIZ,boolean"));
+        assertTrue(code, code.contains("return callPrivate(THIZ, k);"));
+        assertTrue(code, code.contains("protected int callProtected(fr.inria.testproject.context.SerializableObject THIZ) {"));
+        assertTrue(code, code.contains("return callProtected(THIZ);"));
+        assertFalse(code, code.contains("callPublic(DataContextPlayGround THIZ)"));
     }
 }

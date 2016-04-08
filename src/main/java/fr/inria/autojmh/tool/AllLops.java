@@ -5,6 +5,7 @@ import fr.inria.autojmh.selection.SnippetSelector;
 import spoon.reflect.code.CtLoop;
 
 import java.io.File;
+import java.util.Iterator;
 
 /**
  * Created by marodrig on 05/11/2015.
@@ -21,6 +22,30 @@ public class AllLops {
         conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-develop");
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-benchmark");
+
+/*
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-collections");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-collections-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-collections-bench");
+
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-develop");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-benchmark");
+
+/*
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk-develop");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk-benchmark");
+        */
+/*
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-develop");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-benchmark");
+
+/*
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-develop");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\vectorz-benchmark");
 /**/
 /*
         conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2");
@@ -32,9 +57,7 @@ public class AllLops {
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-io-trunk-bench");
 */
         /*
-        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-codec-trunk");
-        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-codec-work");
-        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-codec-bench");
+
         */
 /*
         conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\DIVERSE\\jsyn-master");
@@ -89,5 +112,7 @@ public class AllLops {
                 */
 
     }
+
+
 
 }

@@ -55,6 +55,12 @@ public abstract class DataContextPlayGround {
         return 0;
     }
 
+    //A dummy procedure to test return types
+    private int anPrivateIntMethod(DataContextPlayGround ground) {
+        while (field1 < ground.field2) field1++;
+        return field1;
+    }
+
     //------------------------ PRECONDITIONS TEST --------------------------
     //A dummy method to test if the precoditions sucessfully reject it because of an invalid method call
     private int callTheCallDontPass() {
@@ -121,9 +127,13 @@ public abstract class DataContextPlayGround {
 
     //------------------------ SnippetCode ATTRIBUTES --------------------------
 
-    private static int CONSTANT = 1;
+    private final static int CONSTANT = 1;
 
-    public static int CONSTANT2 = 2;
+    public final static int CONSTANT2 = 2;
+
+    private int callPrivateMethodWithPrivateFields (int k) {
+        return anPrivateIntMethod(this) + k;
+    }
 
     private static int privateStaticMethod(int x) {
         if (x > 100) return CONSTANT;
@@ -132,12 +142,12 @@ public abstract class DataContextPlayGround {
     }
 
     public SerializableObject callSerializable(SerializableObject seri) {
-        if (Math.abs(seri.values) != seri.values) return null;
+        if (Math.abs(seri.values) != seri.values) return seri.pubField;
         return seri;
     }
 
-    public int callNonSerializable(AbstractClass seri) {
-        return seri.pubNonSerializable;
+    public int callNonSerializable(AbstractClass nonSeri) {
+        return nonSeri.pubNonSerializable;
     }
 
     public int callStatic(int bb) {

@@ -2,8 +2,8 @@ package fr.inria.autojmh.generators.microbenchmark;
 
 //import fr.inria.autojmh.generators.microbenchmark.parts.StaticMethodCalls;
 import fr.inria.autojmh.generators.BaseGenerator;
-import fr.inria.autojmh.generators.microbenchmark.parts.SnippetCode;
 import fr.inria.autojmh.generators.microbenchmark.parts.ExtractedMethods;
+import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import fr.inria.autojmh.instrument.DataContextFileChooser;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
@@ -50,21 +50,27 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
      */
     public void generate(BenchSnippet snippet) {
 
+        snippet.setPrinterToAJMH();
+
         if (!getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName()))
             return;
 
-        //Obtain the list of imports from the variables
+        //Obtain the list of imports from the variables and in the mean time, modify its priter
         Set<String> imports = new HashSet<>();
         for (TemplateInputVariable v : snippet.getTemplateAccessesWrappers()) {
+            //Obtain imports
             String importName = v.getPackageQualifiedName();
             if (!importName.isEmpty() && !imports.contains(importName) && !importName.startsWith("java.lang"))
                 imports.add(importName);
+
+            //Set the printer
+            v.setPrinter(new AJMHPrettyPrinter(snippet));
         }
 
         HashMap<String, Object> input = new HashMap<String, Object>();
         //Code of the snippet and Input the extracted methods
         //THE ORDER OF THIS TWO OPERATIONS IS IMPORTANT!!!
-        input.put("snippet_code", new SnippetCode().generate(snippet));
+        input.put("snippet_code", snippet.getCode());
         input.put("static_methods", new ExtractedMethods().generate(snippet));
 
         input.put("package_name", packageName);

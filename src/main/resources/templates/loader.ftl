@@ -108,7 +108,7 @@ public class Loader {
 
 </#list>
 
-    public <T> T readSerializable() {
+    public <T extends Serializable> T readSerializable() {
         try {
             ObjectInputStream ois = new ObjectInputStream(openStream);
             return (T)ois.readObject();
