@@ -1,7 +1,8 @@
 package fr.inria.testproject.context;
 
 import java.util.List;
-import java.lang.Math;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by marcel on 23/02/14.
@@ -127,16 +128,21 @@ public abstract class DataContextPlayGround {
 
     //------------------------ SnippetCode ATTRIBUTES --------------------------
 
-    private final static int CONSTANT = 1;
+    private final static int PRIVCONSTANT1 = 1;
 
     public final static int CONSTANT2 = 2;
 
-    private int callPrivateMethodWithPrivateFields (int k) {
+    private int callPrivateMethodWithPrivateFields(int k) {
         return anPrivateIntMethod(this) + k;
     }
 
+    private int assignCte(int x) {
+        int y = CONSTANT2;
+        return y * x;
+    }
+
     private static int privateStaticMethod(int x) {
-        if (x > 100) return CONSTANT;
+        if (x > 100) return PRIVCONSTANT1;
         else x = CONSTANT2;
         return privateStaticMethod(x + x * 90);
     }
@@ -159,6 +165,14 @@ public abstract class DataContextPlayGround {
             callPrivate();
             callProtected();
         } else callProtected();
+    }
+
+    public boolean snippetIsABlock(int n, String[][] data) {
+        String input = data[n][1];
+        {
+            Matcher matcher = Pattern.compile(data[n][0]).matcher("");
+            return matcher.reset(input).matches();
+        }
     }
 
     public void callInvocationsSomePublic(boolean bb) {

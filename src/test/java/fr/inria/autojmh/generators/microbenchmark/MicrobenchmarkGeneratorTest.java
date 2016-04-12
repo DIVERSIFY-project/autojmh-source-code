@@ -6,10 +6,7 @@ import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import org.junit.Before;
 import org.junit.Test;
-import spoon.reflect.code.CtFor;
-import spoon.reflect.code.CtIf;
-import spoon.reflect.code.CtLoop;
-import spoon.reflect.code.CtReturn;
+import spoon.reflect.code.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -153,7 +150,16 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
         String output = buildOutput(loadFirstSnippets(this, "realcases.Index54",
                 "thisIterator", CtLoop.class));
         //System.out.print(output);
-        assertEquals(1, countMatches(output, "public Index54 THIZ"));
+        assertEquals(output, 1, countMatches(output, "public Index54 THIZ"));
+    }
+
+    /**
+     * Test the variable extraction of the whole microbenchamark
+     */
+    @Test
+    public void test_assignConstant() throws Exception {
+        String output = buildOutput(loadFirstSnippets(this, "assignCte", CtLocalVariable.class));
+        assertEquals(output, 1, countMatches(output, "y = fr.inria.testproject.context.DataContextPlayGround.CONSTANT2"));
     }
 
     /**
@@ -173,9 +179,10 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
     public void test_privateStaticMethod() throws Exception {
         String output = buildOutput(loadFirstSnippets(this, "privateStaticMethod", CtIf.class));
         //Long name because is private
-        assertEquals(output, 1, countMatches(output, "public final int fr_inria_testproject_context_DataContextPlayGround_CONSTANT  = 1"));
+        assertEquals(output, 1, countMatches(output, "public final static int fr_inria_testproject_context_DataContextPlayGround_PRIVCONSTANT1 = 1"));
+        assertEquals(output, 1, countMatches(output, "fr.inria.testproject.context.DataContextPlayGround.CONSTANT"));
         //Short name
-        //assertEquals(output, 1, countMatches(output,"public final int CONSTANT2  = 2"));
+        assertFalse(output, output.contains("int CONSTANT2"));
     }
 
 
@@ -190,25 +197,4 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
         assertEquals(output, 1, countMatches(output, "while ((THIZ_field1) < (ground.field2))"));
         assertEquals(output, 1, countMatches(output, "(THIZ_field1)++;"));
     }
-
-
-    @Test
-    public void testBenchmarkOriginall() throws Exception {
-        BenchSnippet snippet = buildSignalLoop();
-        MicrobenchmarkGenerator generator = new MicrobenchmarkGenerator();
-        generator.setWriteToFile(false);
-        generator.configure(buildGenerationConf());
-        generator.generate(snippet);
-
-        System.out.println(generator.getOutput());
-        assertTrue(generator.getOutput().contains("package fr.mypackage"));
-        assertTrue(generator.getOutput().contains("class testpack_Arithmetic"));
-        assertTrue(generator.getOutput().contains("static final String DATA_FILE = \"testpack-Arithmetic-18"));
-        assertTrue(generator.getOutput().contains("int a ;"));
-        assertTrue(generator.getOutput().contains("b = testpack_Arithmetic_18_s.readint();"));
-        assertTrue(generator.getOutput().contains("testpack_Arithmetic_18_s.openStream("));
-        assertTrue(generator.getOutput().contains("testpack_Arithmetic_18_s.closeStream()"));
-    }
-
-
 }

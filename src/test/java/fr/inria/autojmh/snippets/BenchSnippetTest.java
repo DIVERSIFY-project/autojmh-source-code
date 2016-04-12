@@ -70,6 +70,16 @@ public class BenchSnippetTest {
     }
 
     /**
+     * Test the case in which no injection is needed
+     */
+    @Test
+    public void testNoInjectionNeeded() throws Exception {
+        BenchSnippet snippet = loadFirstSnippets(this, "assignCte", CtLocalVariable.class);
+        assertEquals(0, snippet.getInitialized().size());
+        assertFalse(snippet.isNeedsInitialization());
+    }
+
+    /**
      * Test the proper extraction of an array of objects.
      */
     @Test
@@ -121,7 +131,7 @@ public class BenchSnippetTest {
         //assertEquals(2, snippet.getAccesses().size());  //<--DEFINE BEHAVIOR
         int constants = 0;
         for (TemplateInputVariable t : snippet.getTemplateAccessesWrappers()) {
-            if ( t.getIsAConstant() ) constants++;
+            if ( t.getIsPrivateConstant() || t.getIsPublicConstant() ) constants++;
         }
         assertEquals(2, constants);
     }
@@ -139,6 +149,16 @@ public class BenchSnippetTest {
 
     }
 
+
+    /**
+     * Test that public fields of allowed objects are substituted for their allowed parents
+     */
+    @Test
+    public void testsnippetIsABlock() throws Exception {
+        BenchSnippet snippet = loadFirstSnippets(this,
+                "snippetIsABlock", CtBlock.class);
+        assertEquals(snippet.getASTElement().toString(), 3, snippet.getInitialized().size());
+    }
 
     /**
      * Test that public fields of allowed objects are substituted for their allowed parents

@@ -12,6 +12,7 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtVariable;
 import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
+import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtParameterReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
@@ -137,11 +138,16 @@ public class VariableAccessAttributes {
 
     /**
      * Indicates that the variable is an static final
+     *
      * @param a
      * @return
      */
     public static boolean isAConstant(CtVariableAccess a) {
         try {
+            if (a.getVariable() instanceof CtFieldReference) {
+                CtFieldReference fRef = (CtFieldReference) a.getVariable();
+                return fRef.isStatic() && fRef.isFinal();
+            }
             //An static final variable is indeed initialized,
             Set<ModifierKind> ms = a.getVariable().getDeclaration().getModifiers();
             if (ms.contains(STATIC) && ms.contains(FINAL)) return true;
@@ -202,4 +208,18 @@ public class VariableAccessAttributes {
                 preconditions.checkTypeRef(inv.getExecutable().getDeclaringType());
     }
 
+    public static ModifierKind visibility(CtVariableAccess variableAccess) {
+        try {
+            return variableAccess.getVariable().getDeclaration().getVisibility();
+        } catch (NullPointerException ex) {
+            if (variableAccess.getVariable() instanceof CtFieldReference) {
+                CtClass klazz = variableAccess.getParent(CtClass.class);
+                if (((CtFieldReference) variableAccess.getVariable()).
+                        getDeclaringType().getQualifiedName().equals(klazz.getQualifiedName()))
+                    return ModifierKind.PRIVATE;
+                else
+                    return ModifierKind.PUBLIC;
+            } else throw ex;
+        }
+    }
 }

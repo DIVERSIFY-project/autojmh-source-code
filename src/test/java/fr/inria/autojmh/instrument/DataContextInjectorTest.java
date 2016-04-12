@@ -15,6 +15,7 @@ import spoon.support.reflect.code.CtCodeSnippetStatementImpl;
 import java.util.List;
 
 import static fr.inria.autojmh.ElementProvider.loadFirstSnippets;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
@@ -61,6 +62,22 @@ public class DataContextInjectorTest {
                 "logSerializableCollection", "logdoubleCollection"); //Unwanted injections
     }
 
+
+    /**
+     * Test the special case in which no injection is needed
+     */
+    @Test
+    public void testNoInjection() throws Exception {
+        BenchSnippet snippet = loadFirstSnippets(this, "assignCte", CtLocalVariable.class);
+        BenchSnippetDetectionData dd = new BenchSnippetDetectionData(snippet);
+        //Finally inject
+        DataContextInjector injector = new DataContextInjector();
+        injector.inject(snippet.getASTElement(), dd);
+
+        List<CtCodeSnippetStatement> injected = snippet.getASTElement().getElements(
+                new TypeFilter<CtCodeSnippetStatement>(CtCodeSnippetStatement.class));
+        assertEquals(0, injected.size());
+    }
 
     /**
      * Test the special case in which a return is not inside a block

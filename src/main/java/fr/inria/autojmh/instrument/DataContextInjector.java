@@ -77,7 +77,7 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
             BenchSnippet input = ((BenchSnippetDetectionData) data).getSnippet();
 
             //Reject snippet if it does not meet preconditions.
-            if ( !input.meetsPreconditions() ) return;
+            if (!input.meetsPreconditions() || !input.isNeedsInitialization()) return;
 
             //Obtain return statements to instrument them
             List<CtReturn> returns = element.getElements(new TypeFilter<CtReturn>(CtReturn.class));
@@ -105,26 +105,32 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
                 //Close the file, goes before the after because is done piling up
                 CtCodeSnippetStatement st = new CtCodeSnippetStatementImpl();
                 st.setValue(Log.class.getCanonicalName() + ".close()");
-                ((CtStatement) element).insertAfter(st);
 
-                //Record After
-                statements = new CtStatementListImpl();
-                CtStatementList afterRetSt = new CtStatementListImpl();
-                setInjectionTemplate(Log.class.getCanonicalName() + ".getLog().log%type%(%var%, \"%signature%\", true)");
-                for (int i = 0; i < input.getTemplateAccessesWrappers().size(); i++) {
-                    TemplateInputVariable wrap = input.getTemplateAccessesWrappers().get(i);
-                    if (wrap.isInitialized()) {
-                        statements.addStatement(buildCode(wrap, input));
-                        if ( returns != null && returns.size() > 0 )
-                            afterRetSt.addStatement(buildCode(wrap, input));
+                boolean isAReturn = element instanceof CtReturn;
+                if (!isAReturn) {
+                    ((CtStatement) element).insertAfter(st);
+                    //Record After
+                    statements = new CtStatementListImpl();
+                    CtStatementList afterRetSt = new CtStatementListImpl();
+                    setInjectionTemplate(Log.class.getCanonicalName() + ".getLog().log%type%(%var%, \"%signature%\", true)");
+                    for (int i = 0; i < input.getTemplateAccessesWrappers().size(); i++) {
+                        TemplateInputVariable wrap = input.getTemplateAccessesWrappers().get(i);
+                        if (wrap.isInitialized()) {
+                            statements.addStatement(buildCode(wrap, input));
+                            if (returns != null && returns.size() > 0)
+                                afterRetSt.addStatement(buildCode(wrap, input));
+                        }
                     }
-                }
-                try {
-                    ((CtStatement) element).insertAfter(statements);
-                    if ( returns != null && returns.size() > 0 )
-                        for ( CtReturn r : returns ) r.insertBefore(afterRetSt);
-                } catch (IllegalArgumentException e) {
-                    log.warn("Unexpected exception while inserting statements after.");
+
+                    try {
+                        ((CtStatement) element).insertAfter(statements);
+                        if (returns != null && returns.size() > 0)
+                            for (CtReturn r : returns) r.insertBefore(afterRetSt);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Unexpected exception while inserting statements after.");
+                    }
+                } else {
+                    ((CtStatement) element).insertBefore(st);
                 }
 
 
@@ -140,8 +146,6 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
     public void configure(AJMHConfiguration configuration) {
         conf = configuration;
     }
-
-
 
 
 }

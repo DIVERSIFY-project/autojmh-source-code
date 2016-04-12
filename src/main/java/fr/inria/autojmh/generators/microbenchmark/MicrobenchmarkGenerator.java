@@ -1,6 +1,7 @@
 package fr.inria.autojmh.generators.microbenchmark;
 
 //import fr.inria.autojmh.generators.microbenchmark.parts.StaticMethodCalls;
+
 import fr.inria.autojmh.generators.BaseGenerator;
 import fr.inria.autojmh.generators.microbenchmark.parts.ExtractedMethods;
 import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
@@ -9,7 +10,8 @@ import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.controlflow.AllBranchesReturn;
-import spoon.reflect.code.*;
+import spoon.reflect.code.CtExpression;
+import spoon.reflect.code.CtReturn;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 import spoon.support.reflect.code.CtCodeSnippetExpressionImpl;
@@ -32,6 +34,8 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
 
     private int generatedCount = 0;
 
+    private boolean mustHaveInitData = true;
+
     public int getGeneratedCount() {
         return generatedCount;
     }
@@ -52,8 +56,11 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
 
         snippet.setPrinterToAJMH();
 
-        if (!getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName()))
-            return;
+        if (mustHaveInitData) {
+            if (snippet.isNeedsInitialization() &&
+                    !getChooser().existsDataFile(dataContextPath, snippet.getMicrobenchmarkClassName()))
+                return;
+        }
 
         //Obtain the list of imports from the variables and in the mean time, modify its priter
         Set<String> imports = new HashSet<>();
@@ -82,13 +89,16 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
         input.put("return_statement", getDefaultReturn(snippet));
 
         //Set the path to the files with the data context
-        getChooser().setDataContextPath(dataContextPath);
-        try {
-            input.put("data_file_path", getChooser().chooseBefore(snippet.getMicrobenchmarkClassName()));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        input.put("initialization_needed", snippet.isNeedsInitialization());
+        if (mustHaveInitData && snippet.isNeedsInitialization()) {
+            getChooser().setDataContextPath(dataContextPath);
+            try {
+                input.put("data_file_path", getChooser().chooseBefore(snippet.getMicrobenchmarkClassName()));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            input.put("data_root_folder_path", new File(dataContextPath).getAbsolutePath().replace("\\", "/"));
         }
-        input.put("data_root_folder_path", new File(dataContextPath).getAbsolutePath().replace("\\", "/"));
         //input.put("data_file_path", snippet.getMicrobenchmarkClassName());
 
         //String degradedType = false ? GRACEFULLY_BENCHMARK : ORIGINAL_BENCHMARK;
@@ -170,6 +180,7 @@ public class MicrobenchmarkGenerator extends BaseGenerator {
     @Override
     public void configure(AJMHConfiguration configuration) {
         super.configure(configuration);
+        this.mustHaveInitData = configuration.getBenchmakMustHaveInitializationData();
         this.dataContextPath = configuration.getDataContextPath();
         outputPath = outputPath + "/src/main/java/" + packageName.replace(".", "/");
     }

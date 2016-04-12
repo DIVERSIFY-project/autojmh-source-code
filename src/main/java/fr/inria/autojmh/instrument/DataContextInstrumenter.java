@@ -70,7 +70,7 @@ public class DataContextInstrumenter implements Configurable {
         //Instrument
         SyringeInstrumenter l = new SyringeInstrumenterImpl(prjPath, srcPath, outputPrj);
         l.instrument(confSrc);
-        l.setOnlyCopyLogger(true);
+        l.setOnlyCopyLogger(false);
         l.writeIdFile("microbenchmarkProperties.id");
 
         if (detector.getElementsDetectedCount() == 0) log.warning("No snippet for benchmarking detected");

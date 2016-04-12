@@ -2,9 +2,13 @@ package fr.inria.autojmh.generators;
 
 import fr.inria.autojmh.generators.microbenchmark.MicrobenchmarkGenerator;
 import fr.inria.autojmh.instrument.DataContextInstrumenter;
+import fr.inria.autojmh.instrument.TaggletCollector;
 import fr.inria.autojmh.projectbuilders.Maven.MavenProjectBuilder;
 import fr.inria.autojmh.projectbuilders.ProjectFiles;
-import fr.inria.autojmh.selection.*;
+import fr.inria.autojmh.selection.SelectionFileWalker;
+import fr.inria.autojmh.selection.SnippetSelector;
+import fr.inria.autojmh.selection.TaggedStatementDetector;
+import fr.inria.autojmh.selection.Tagglet;
 import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.InstrumentationCleaner;
@@ -13,6 +17,8 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import static fr.inria.autojmh.snippets.Preconditions.*;
 
 /**
  * Class that drives the whole generation instrument.
@@ -76,11 +82,11 @@ public class AJMHGenerator implements BenchmakGenerator {
             log.fatal("The input path " + conf.getInputProjectPath() + " can't be accessed.");
             return false;
         }
-        if ( !(new File(conf.getInputProjectPath() + conf.getInputProjectSrcPath()).exists()) ) {
+        if (!(new File(conf.getInputProjectPath() + conf.getInputProjectSrcPath()).exists())) {
             log.fatal("The input source path " + conf.getInputProjectSrcPath() + " can't be accessed.");
             return false;
         }
-        if ( !(new File(conf.getInputProjectPath() + conf.getInputProjectTestPath()).exists()) ) {
+        if (!(new File(conf.getInputProjectPath() + conf.getInputProjectTestPath()).exists())) {
             log.fatal("The input test path " + conf.getInputProjectTestPath() + " can't be accessed.");
             return false;
         }
@@ -116,11 +122,16 @@ public class AJMHGenerator implements BenchmakGenerator {
             log.info("Removing non compliant snippets");
             List<BenchSnippet> complyingSnippets = new ArrayList<>();
             for (BenchSnippet snippet : snippets) {
-                if (snippet.meetsPreconditions()) complyingSnippets.add(snippet);
+                if (snippet.meetsPreconditions())
+                    complyingSnippets.add(snippet);
+                else if ( conf.getPrintRejected() ) {
+                    log.warn("REJECTING: " + snippet.getASTElement().toString());
+                }
             }
-            log.info("Total snippets: " + snippets.size());
-            log.info("Snippet accepted: " + complyingSnippets.size());
-            if ( complyingSnippets.size() == 0 ) {
+
+            int totalSnippets = snippets.size();
+            int accepted = complyingSnippets.size();
+            if (accepted == 0) {
                 log.info("No snippets accepted. Exiting");
                 return;
             }
@@ -146,17 +157,61 @@ public class AJMHGenerator implements BenchmakGenerator {
             runGenerators(g, snippets);
             log.info("Microbenchmarks generated");
 
-            log.info("----------- STATS: ---------------");
-            log.info("Microbenchmarks generated: " + g.getGeneratedCount());
-            log.info("Rejection causes:");
-            for ( Map.Entry<String, Integer> k : conf.getPreconditions().getRejectionCause().entrySet() )
-                log.info(" + " + k.getKey() + ": " + k.getValue());
-            log.info("----------------------------------");
+            printStats(totalSnippets, accepted, g);
 
         } catch (Exception e) {
             log.fatal("Process failed");
             throw new RuntimeException(e);
         }
+    }
+
+    private Map<String, List<Tagglet>> collectTagglets() {
+        TaggletCollector collector = new TaggletCollector();
+        collector.configure(conf);
+        collector.setTagglets(userTagglets);
+        return collector.collect();
+    }
+
+    private void printStats(int totalSnippets, int accepted, MicrobenchmarkGenerator g) {
+        Map<String, Integer> causes = conf.getPreconditions().getRejectionCause();
+        log.info("----------- STATS: ---------------");
+        logCause(true, "Total", totalSnippets, totalSnippets);
+        logCause(true, "Accepted", accepted, totalSnippets);
+
+
+        logCause(true, VARS_UNSUPPORTED, causes, totalSnippets);
+        logCause(false, COLLECTION_OF_UNSUPPORTED_TYPE, causes, totalSnippets);
+        logCause(false, TYPE_IS_NOT_PUBLIC, causes, totalSnippets);
+        logCause(false, TYPE_IS_NOT_STORABLE, causeCount(VARS_UNSUPPORTED, causes) -
+                (causeCount(COLLECTION_OF_UNSUPPORTED_TYPE, causes) + causeCount(TYPE_IS_NOT_PUBLIC, causes)),
+                totalSnippets);
+        logCause(true, DYN_INV_UNSUPPORTED, causes, totalSnippets);
+        logCause(false, DYN_METHOD_TARGET_TYPE_UNSUPPORTED, causes, totalSnippets);
+        logCause(false, LEVELS_TOO_DEEP, causes, totalSnippets);
+        logCause(false, PRIVATE_CONSTRUCTOR, causes, totalSnippets);
+        logCause(false, ERR_GET_BODY + " - Protected", causes, totalSnippets);
+        logCause(true, "Generated", g.getGeneratedCount(), totalSnippets);
+        log.info("----------------------------------");
+
+        for (Map.Entry<String, Integer> k : conf.getPreconditions().getRejectionCause().entrySet())
+            log.info(" + " + k.getKey() + ": " + k.getValue());
+    }
+
+    private int causeCount(String cause, Map<String, Integer> causes) {
+        if (causes.containsKey(cause)) return causes.get(cause);
+        else return 0;
+    }
+
+    private void logCause(boolean b, String cause, Map<String, Integer> causes, int total) {
+        if (!causes.containsKey(cause)) logCause(b, cause, 0, total);
+        else logCause(b, cause, causes.get(cause), total);
+    }
+
+    private void logCause(boolean b, String cause, int k, int total) {
+        String s = cause + ": " + k;
+        if (total != k) s = s + " : " + Math.round((double)k / (double)total*100);
+        if (!b) s = " -- " + s;
+        log.info(s);
     }
 
     /**
@@ -210,59 +265,13 @@ public class AJMHGenerator implements BenchmakGenerator {
         ProjectFiles.makeIfNotExists(f.getAbsolutePath());
     }
 
-    /**
-     * Collect all tagglets from the input source
-     *
-     * @return A Map of taglets ordered by their corresponding class
-     */
-    private Map<String, List<Tagglet>> collectTagglets() {
 
-        log.info("Collecting tagglets");
-
-        if (userTagglets == null) {
-            //1. Obtain the tagglets from the code
-            SelectionFileWalker walker = new SelectionFileWalker();
-            try {
-                //Collect in the source dir
-                walker.walkDir(conf.getInputProjectPath() + conf.getInputProjectSrcPath());
-                //And collect in the test dir as well
-                walker.walkDir(conf.getInputProjectPath() + conf.getInputProjectTestPath());
-            } catch (IOException e) {
-                log.fatal("Could not collect tagglets: " + e.toString());
-                return null;
-            }
-            log.info("Done");
-            return walker.getTagglets();
-        } else {
-            HashMap<String, List<Tagglet>> result = new HashMap<>();
-            for (Tagglet t : userTagglets) {
-                if (!result.containsKey(t.getClassName()))
-                    result.put(t.getClassName(), new ArrayList<Tagglet>());
-                result.get(t.getClassName()).add(t);
-            }
-            return result;
-        }
-    }
 
     @Override
     public void configure(AJMHConfiguration configuration) {
         conf = configuration;
     }
 
-    /**
-     * Builds a report of the generated instrument based on the configuration.
-     */
-    public void report() {
-
-    }
-
-    public void setTagglets(Collection<Tagglet> tagglets) {
-        this.userTagglets = tagglets;
-    }
-
-    public Collection<Tagglet> getTagglets() {
-        return null;
-    }
 
     public void setSelector(SnippetSelector customDetector) {
         this.customDetector = customDetector;

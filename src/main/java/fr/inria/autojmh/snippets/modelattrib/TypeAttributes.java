@@ -76,6 +76,7 @@ public class TypeAttributes {
             if (ref instanceof CtArrayTypeReference) return true;
             Set<CtTypeReference> refs = ref.getSuperInterfaces();
             if (refs == null) return false;
+            if ( ref.getQualifiedName().equals("java.util.Collection") ) return true;
             for (CtTypeReference r : refs)
                 if (r.getQualifiedName().equals("java.util.Collection") || isCollection(r))
                     return true;

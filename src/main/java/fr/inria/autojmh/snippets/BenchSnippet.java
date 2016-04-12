@@ -10,7 +10,6 @@ import fr.inria.dataflow.InitializedVariables;
 import org.apache.log4j.Logger;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
@@ -36,6 +35,13 @@ public class BenchSnippet implements Configurable {
      * Snippet we want to extract data context
      */
     private static Logger log = Logger.getLogger(BenchSnippet.class);
+
+    /**
+     * In some very special cases, the microbenchmarks needs no initialization.
+     * <p>
+     * We set a flag because in those cases, there is no need from data from unit test to exits.
+     */
+    private boolean needsInitialization = true;
 
 
     /**
@@ -175,6 +181,10 @@ public class BenchSnippet implements Configurable {
         this.benchMethodReturnType = benchMethodReturnType;
     }
 
+    public boolean isNeedsInitialization() {
+        if (initialized == null) resolveDataContext(astElement);
+        return needsInitialization;
+    }
 
     /**
      * Some extra information is needed per variable inside the snippet to generate the parts. This
@@ -303,12 +313,15 @@ public class BenchSnippet implements Configurable {
      * @return True if the context was extracted successfully
      */
     private boolean resolveDataContext(CtStatement statement) {
+
+        needsInitialization = false;
+
         //Check some preconditions needed for the processor to run:
         //All variable access made inside the statement
         List<CtVariableAccess> access = statement.getElements(
                 new TypeFilter<CtVariableAccess>(CtVariableAccess.class));
 
-        if( statement.getElements(new TypeFilter<CtThisAccess>(CtThisAccess.class)).size() > 0 ) {
+        if (statement.getElements(new TypeFilter<CtThisAccess>(CtThisAccess.class)).size() > 0) {
             mustSerializeThiz = new Preconditions().checkTypeRef(statement.getParent(CtClass.class).getReference());
         }
 
@@ -333,7 +346,7 @@ public class BenchSnippet implements Configurable {
                     for (CtFieldAccess ta : b.getElements(new TypeFilter<CtFieldAccess>(CtFieldAccess.class))) {
                         if (ta.getTarget() instanceof CtThisAccess || ta.getTarget() == null) {
                             access.add(ta);
-                            initialized.add(ta);
+                            //initialized.add(ta);
                         }
                     }
                     for (CtInvocation i : b.getElements(new TypeFilter<CtInvocation>(CtInvocation.class))) {
@@ -388,7 +401,8 @@ public class BenchSnippet implements Configurable {
                         astElement.getParent(CtClass.class).getReference(), "THIZ", thisAccess);
                 thizVarAccess = c.createVariableAccess(thizVariable.getReference(), false);
             }*/
-
+        needsInitialization = initialized.size() > 0;
+        if (access.size() <= 0) return true;
 
         int i = 0;
         int replaced = 0;

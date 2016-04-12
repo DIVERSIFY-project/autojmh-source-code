@@ -27,21 +27,27 @@ import java.util.concurrent.*;
  */
 public class Preconditions implements Configurable {
 
-    private static final String LEVELS_TOO_DEEP = "Levels too deep";
-    private static final String TYPE_IS_NOT_PUBLIC = "Type is not public";
-    private static final String TYPE_IS_NOT_STORABLE = "Type is not storable (primitive, class primitive, serializable)";
-    private static final String UNEXPECTED_ERR = "Unexpected error";
-    private static final String VARS_UNSUPPORTED = "Variables unsupported";
-    private static final String DYN_INV_UNSUPPORTED = "Dynamic invocations unsupported";
-    private static final String PRIVATE_CONSTRUCTOR = "Private constructor";
-    //private static final String TARGET_TYPE_UNSUPPORTED = "Target type unsupported";
-    private static final String PRIVATE_DYNAMIC_METHOD = "Private dynamic method";
-    private static final String UNEXPECTED_ERR_DYN_METHOD = "Unexpected error while inspecting dynamic method";
-    private static final String UNEXPECTED_ERR_CONSTRUCTOR = "Unexpected error while inspecting constructor";
-    private static final String DYN_METHOD_TARGET_TYPE_UNSUPPORTED = "Dynamic method's target type unssuported";
-    private static final String COLLECTION_OF_UNSUPPORTED_TYPE = "Collection of unsupported type";
-    private static final String ERR_GET_BODY = "Error getting body of invocation";
-    private static final String CANNOT_DETERMINE_VISIBILITY = "Cannot determine method's visibility";
+    //Rejections because of variables
+    public static final String VARS_UNSUPPORTED = "Variables unsupported";
+    public static final String COLLECTION_OF_UNSUPPORTED_TYPE = "Collection of unsupported type";
+    public static final String TYPE_IS_NOT_PUBLIC = "Type is not public";
+    public static final String TYPE_IS_NOT_STORABLE = "Type is not storable (primitive, class primitive, serializable)";
+
+
+    //Rejections because methods
+    public static final String DYN_INV_UNSUPPORTED = "Dynamic invocations unsupported";
+    public static final String LEVELS_TOO_DEEP = "Levels too deep";
+    public static final String ERR_GET_BODY = "Can't get body of abstract method";
+    public static final String PRIVATE_CONSTRUCTOR = "Private constructor";
+    public static final String DYN_METHOD_TARGET_TYPE_UNSUPPORTED = "Dynamic method's target type unssuported";
+
+
+    //ERRORS:
+    public static final String UNEXPECTED_ERR = "Unexpected error";
+    public static final String UNEXPECTED_ERR_DYN_METHOD = "Unexpected error while inspecting dynamic method";
+    public static final String UNEXPECTED_ERR_CONSTRUCTOR = "Unexpected error while inspecting constructor";
+    public static final String CANNOT_DETERMINE_VISIBILITY = "Cannot determine method's visibility";
+
 
     private static Logger log = Logger.getLogger(Preconditions.class);
     //Quantify the causes of rejection
@@ -93,7 +99,7 @@ public class Preconditions implements Configurable {
         int depth = conf == null ? 5 : conf.getMethodExtractionDepth();
         if (snippet.getASTElement() == null) return incCause(UNEXPECTED_ERR);
         if (!allVariablesAreSupported(snippet)) return incCause(VARS_UNSUPPORTED);
-        if (containsUnsupportedDynamicInvocations(snippet.getASTElement(), depth, new HashSet<CtInvocation>()))
+        if (containsUnsupportedDynamicInvocations(snippet.getASTElement(), depth, new HashSet<CtInvocation>(), false))
             return incCause(DYN_INV_UNSUPPORTED);
         return true;
     }
@@ -178,12 +184,15 @@ public class Preconditions implements Configurable {
      * <p>
      * Dynamic invocations of collections are supported
      *
-     * @param element Invocation to inspect
-     * @param levels  Levels to explore
+     * @param element      Invocation to inspect
+     * @param levels       Levels to explore
+     * @param visited      Invocations already visited. This method calls himself recursively.
+     * @param checkInvType Indicate if the fact that the target is not supported is a reason for rejection.
      * @return True if the method contains non static invocations
      */
 
-    private boolean containsUnsupportedDynamicInvocations(CtElement element, int levels, HashSet<CtInvocation> visited) {
+    private boolean containsUnsupportedDynamicInvocations(CtElement element, int levels,
+                                                          HashSet<CtInvocation> visited, boolean checkInvType) {
         if (levels <= 0) return !incCause(LEVELS_TOO_DEEP); //ALWAYS EQUAL TRUE
         levels--;
 
@@ -229,9 +238,10 @@ public class Preconditions implements Configurable {
                             return !incCause(DYN_METHOD_TARGET_TYPE_UNSUPPORTED);//ALWAYS EQUAL TRUE
                             //If called by another invocation, it will depend on whether the other is supported or not
                         } else if (inv.getTarget() instanceof CtInvocation) continue;
-                    } else {
+                    } else if (checkInvType) {
                         //Checks that the target is accepted.
-                        //TODO: check recursively when the target is another invocation.
+                        //When the target is another invocation it will be checked later or is already checked
+                        if (inv.getTarget() instanceof CtInvocation) continue;
                         if (!checkTypeRef(inv.getTarget().getType()))
                             return !incCause(DYN_METHOD_TARGET_TYPE_UNSUPPORTED);
                     }
@@ -245,7 +255,7 @@ public class Preconditions implements Configurable {
                 //unsuported variables inside
                 try {
                     element = inv.getExecutable().getDeclaration().getBody();
-                    if (containsUnsupportedDynamicInvocations(element, levels - 1, visited)) return true;
+                    if (containsUnsupportedDynamicInvocations(element, levels - 1, visited, checkInvType)) return true;
                 } catch (Exception ex) {
                     //If we manage to even find their bodies... :P
                     log.warn("Unable to find body of invocation " + inv.toString() + " contains unsupported methods");

@@ -89,15 +89,15 @@ public class AJMHPrettyPrinterTest {
 
     @Test
     public void testTransform_PublicConstant() throws Exception {
-        String code = generateCode("privateStaticMethod", CtExpression.class);
-        assertEquals(code, 1, countMatches(code, " CONSTANT2"));
+        String code = generateCode("privateStaticMethod", CtAssignment.class);
+        assertEquals(code, 1, countMatches(code, "fr.inria.testproject.context.DataContextPlayGround.CONSTANT2"));
     }
 
     @Test
     public void testTransform_PrivateConstant() throws Exception {
         String code = generateCode("privateStaticMethod", CtIf.class);
-        assertEquals(code, 1, countMatches(code, "fr_inria_testproject_context_DataContextPlayGround_CONSTANT"));
-        assertFalse(code.contains("fr.inria.testproject.context.DataContextPlayGround.CONSTANT"));
+        assertEquals(code, 1, countMatches(code, "fr_inria_testproject_context_DataContextPlayGround_PRIVCONSTANT1"));
+        assertFalse(code, code.contains("fr.inria.testproject.context.DataContextPlayGround.PRIVCONSTANT1"));
     }
 
     @Test

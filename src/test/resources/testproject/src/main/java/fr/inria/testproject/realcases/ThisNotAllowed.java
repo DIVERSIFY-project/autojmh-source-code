@@ -1,6 +1,5 @@
 package fr.inria.testproject.realcases;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,13 +14,15 @@ public class ThisNotAllowed {
     }
 
     protected void doSomething(String s) {
-        System.out.print(s + "Yeah!!"  + getArrayOffset());
+        System.out.print(s + "Yeah!!" + getArrayOffset());
     }
 
     public void printStrings(List<String> stringList) {
-        for ( String s : stringList )
+        for (String s : stringList)
             doSomething(s);
     }
+
+
 
 }
 

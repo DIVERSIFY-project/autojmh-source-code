@@ -1,20 +1,17 @@
 package fr.inria.autojmh.snippets;
 
-import fr.inria.autojmh.generators.printer.AJMHPrettyPrinter;
 import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
+import fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.ModifierKind;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
-import spoon.reflect.visitor.PrettyPrinter;
-
-import static fr.inria.autojmh.snippets.modelattrib.MethodAttributes.visibility;
 import static fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes.isAConstant;
+import static fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes.visibility;
 import static spoon.reflect.declaration.ModifierKind.PUBLIC;
 
 /**
@@ -212,10 +209,17 @@ public class TemplateInputVariable {
     }
 
     /**
-     * Indicates if the variable is a constant
+     * Indicates if the variable is a private constant
      */
-    public boolean getIsAConstant() {
+    public boolean getIsPrivateConstant() {
         return isAConstant(variableAccess) && (visibility(variableAccess) != PUBLIC);
+    }
+
+    /**
+     * Indicates if the variable is a private constant
+     */
+    public boolean getIsPublicConstant() {
+        return isAConstant(variableAccess) && (visibility(variableAccess) == PUBLIC);
     }
 
     /**

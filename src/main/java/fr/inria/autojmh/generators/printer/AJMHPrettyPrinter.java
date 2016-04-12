@@ -91,7 +91,7 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
 
                     //PUBLIC OR PRIVATE CONSTANT
                     if (var == null || var.getModifiers().contains(PUBLIC)) {
-                        super.visitCtVariableAccess(variableAccess);
+                        write(access.getVariable().toString());
                     } else {
                         enterCtExpression(variableAccess);
                         write(access.getParent(CtClass.class).getQualifiedName().replace(".", "_"));

@@ -130,7 +130,7 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
             //The Bench snippet will auto resolve its context
             //if the size of the Input access is zero, it cannot be used to avoid DCE, therefore
             //a warning is issued
-            if (s.getTemplateAccessesWrappers().size() == 0)
+            if (s.isNeedsInitialization() && s.getTemplateAccessesWrappers().size() == 0)
                 logger.warning("Cannot resolve context for " + s.getPosition());
             else {
                 snippets.add(s);

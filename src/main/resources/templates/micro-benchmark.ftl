@@ -24,16 +24,18 @@ import ${import};
 @State(Scope.Thread)
 public class ${class_name}_Benchmark {
 
+  <#list input_vars as input_var>
+
+    <#if input_var.isPrivateConstant == true>
+    public final static ${input_var.variableTypeName} ${input_var.templateCodeCompilableName} = ${input_var.constantValue};
+    <#elseif input_var.isPublicConstant == false >
+    public ${input_var.variableTypeName} ${input_var.templateCodeCompilableName};
+    </#if>
+  </#list>
+
+<#if initialization_needed>
     static final String DATA_ROOT_FOLDER = "${data_root_folder_path}";
     static final String DATA_FILE = "${data_file_path}";
-
-<#list input_vars as input_var>
-    <#if input_var.isAConstant == true>
-    public final ${input_var.variableTypeName} ${input_var.templateCodeCompilableName}  = ${input_var.constantValue};
-    <#else>
-    public ${input_var.variableTypeName} ${input_var.templateCodeCompilableName} ;
-    </#if>
-</#list>
 
     @Setup(Level.Invocation)
     public void setup() {
@@ -50,6 +52,7 @@ public class ${class_name}_Benchmark {
             ${class_name}_s.closeStream();
         } catch(Exception e) { throw new RuntimeException(e); }
     }
+</#if>
 
     ${static_methods}
 

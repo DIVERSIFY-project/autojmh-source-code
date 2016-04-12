@@ -59,9 +59,12 @@ public class AJMHConfiguration {
      */
     private String generatedTestPath;
 
-
     private static final String RUNTIME_CONTEXT = "log";
+
     private Preconditions preconditions;
+
+    private boolean mustHaveInitdata = true;
+    private boolean printRejected;
 
     /**
      * Get the path where the context data is stored
@@ -193,5 +196,21 @@ public class AJMHConfiguration {
     public Preconditions getPreconditions() {
         if ( preconditions == null ) preconditions = new Preconditions();
         return preconditions;
+    }
+
+    public boolean getBenchmakMustHaveInitializationData() {
+        return mustHaveInitdata;
+    }
+
+    public void setBenchmakMustHaveInitializationData(boolean mustHaveInitdata) {
+        this.mustHaveInitdata = mustHaveInitdata;
+    }
+
+    public boolean getPrintRejected() {
+        return printRejected;
+    }
+
+    public void setPrintRejected(boolean printRejected) {
+        this.printRejected = printRejected;
     }
 }
