@@ -13,6 +13,7 @@ import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.InstrumentationCleaner;
 import org.apache.log4j.Logger;
+import spoon.reflect.declaration.CtMethod;
 
 import java.io.File;
 import java.io.IOException;
@@ -157,7 +158,7 @@ public class AJMHGenerator implements BenchmakGenerator {
             runGenerators(g, snippets);
             log.info("Microbenchmarks generated");
 
-            printStats(totalSnippets, accepted, g);
+            printStats(totalSnippets, accepted, g, complyingSnippets);
 
         } catch (Exception e) {
             log.fatal("Process failed");
@@ -172,9 +173,36 @@ public class AJMHGenerator implements BenchmakGenerator {
         return collector.collect();
     }
 
-    private void printStats(int totalSnippets, int accepted, MicrobenchmarkGenerator g) {
+    private void printStats(int totalSnippets, int accepted, MicrobenchmarkGenerator g, List<BenchSnippet> snippets) {
+
+
+
+
         Map<String, Integer> causes = conf.getPreconditions().getRejectionCause();
+
+
+        HashSet<String> classes = new HashSet<>();
+        HashSet<String> methods = new HashSet<>();
+
+        //Get Classes and Methods
+        for ( BenchSnippet snippet : snippets ) {
+            String className =
+                    snippet.getASTElement().getPosition().getCompilationUnit().getFile().getAbsolutePath();
+            if ( !classes.contains(className) ) classes.add(className);
+
+            try {
+                String methodName = className + "::" + snippet.getASTElement().getParent(CtMethod.class).getSignature();
+                if ( !methods.contains(methodName) ) methods.add(methodName);
+            } catch (Exception ex) {
+                log.warn("Unable to get method name for " + snippet.getPosition());
+                //Do nothing
+            }
+
+        }
         log.info("----------- STATS: ---------------");
+        log.info("Class covered: " +  classes.size());
+        log.info("Methods covered: " + methods.size());
+
         logCause(true, "Total", totalSnippets, totalSnippets);
         logCause(true, "Accepted", accepted, totalSnippets);
 
