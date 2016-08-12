@@ -65,7 +65,7 @@ public class MicrobenchmarkLogger extends LightLog {
             out.writeObject(data);
             out.flush();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.out.print(e.getCause());
         }
     }
 

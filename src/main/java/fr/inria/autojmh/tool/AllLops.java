@@ -5,6 +5,8 @@ import fr.inria.autojmh.selection.SnippetSelector;
 import spoon.reflect.code.CtLoop;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Created by marodrig on 05/11/2015.
@@ -21,8 +23,16 @@ public class AllLops {
         conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-develop");
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\MATH_3_2-benchmark");
+/*
+        conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\DIVERSE\\jsyn-master");
+        conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\working");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\PROJECTS\\jsyn-benchmark");
 
-       /* conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\imglib2-master");
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-lang");
+        conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2-work");
+        conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\LANG_3_3_2-bench");
+/*
+        conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\imglib2-master");
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\imglib2-master-work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\imglib2-master-benchmark");
 
@@ -32,9 +42,6 @@ public class AllLops {
         conf.setWorkingDir("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\imglib2-master-work");
         conf.setGenerationOutputPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\imglib2-master-benchmark");
 
-        conf.setInputProjectPath("C:\\MarcelStuff\\PROJECTS\\DIVERSE\\jsyn-master");
-        conf.setWorkingDir("C:\\MarcelStuff\\PROJECTS\\working");
-        conf.setGenerationOutputPath("C:\\MarcelStuff\\PROJECTS\\jsyn-benchmark");
 
         /*
         conf.setInputProjectPath("C:\\MarcelStuff\\DATA\\DIVERSE\\input_programs\\commons-lang");
@@ -109,6 +116,11 @@ public class AllLops {
         gen.configure(conf);
         try {
             gen.setSelector(new SnippetSelector<CtLoop>() {
+                @Override
+                public Collection<String> eventsSupported() {
+                    return Arrays.asList("@@SNNIPPET");
+                }
+
                 @Override
                 public void process(CtLoop loop) {
                     if (loop.getBody() != null) select(loop);

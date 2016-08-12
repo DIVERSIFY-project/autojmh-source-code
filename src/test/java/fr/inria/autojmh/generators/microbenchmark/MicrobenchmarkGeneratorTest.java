@@ -43,12 +43,13 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
     }
 
     private String buildOutput(BenchSnippet snippet) throws URISyntaxException {
+        /*
         AJMHConfiguration configuration = new AJMHConfiguration();
         configuration.setWorkingDir(getTestPath(this, "testproject"));
         configuration.setPackageName("fr.inria.testproject.context");
         configuration.setGenerationOutputPath("/output_sources");
         configuration.setTemplatePath(getMainPath("templates"));
-        configuration.setGenerationOutputPath("/output");
+        configuration.setGenerationOutputPath("./output");*/
 
         MicrobenchmarkGenerator generator = new MicrobenchmarkGenerator();
         generator.setChooser(new StubFileChooser());
@@ -92,7 +93,7 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
         String output = buildOutput(loadFirstSnippets(this, "realcases.RemoveOverrideCase",
                 "printStrings", CtLoop.class));
         assertFalse(output, output.contains("@java.lang.Override"));
-        assertEquals(output, 1, countMatches(output, "protected void doSomething(fr.inria.testproject.realcases.RemoveOverrideCase THIZ,java.lang.String s"));
+        assertEquals(output, 1, countMatches(output, "void doSomething(fr.inria.testproject.realcases.RemoveOverrideCase THIZ,java.lang.String s"));
         assertEquals(output, 1, countMatches(output, "doSomething(THIZ, s)"));
 
     }
@@ -106,7 +107,7 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
         String output = buildOutput(loadFirstSnippets(this, "realcases.ThisNotAllowed",
                 "printStrings", CtLoop.class));
         assertFalse(output, output.contains("protected void doSomething(fr.inria.testproject.realcases.ThisNotAllowed THIZ"));
-        assertEquals(output, 1, countMatches(output, "protected void doSomething(java.lang.String s)"));
+        assertEquals(output, 1, countMatches(output, "void doSomething(java.lang.String s)"));
 
     }
 
@@ -168,7 +169,7 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
     @Test
     public void test_callSerializable() throws Exception {
         String output = buildOutput(loadFirstSnippets(this, "callSerializable", CtIf.class));
-        assertEquals(output, 1, countMatches(output, "if ((java.lang.Math.abs(seri_values)) != (seri_values))"));
+        assertEquals(output, 1, countMatches(output, "if ((java.lang.Math.abs(seri_values)) != ((seri_values)))"));
         assertEquals(output, 1, countMatches(output, "return seri.pubField"));
     }
 
@@ -194,7 +195,7 @@ public class MicrobenchmarkGeneratorTest extends BenchmarkTest {
     public void test_CallPrivateMethodWithPrivateFields() throws Exception {
         String output = buildOutput(loadFirstSnippets(this, "callPrivateMethodWithPrivateFields", CtReturn.class));
         assertFalse(output, output.contains("ground_field2"));
-        assertEquals(output, 1, countMatches(output, "while ((THIZ_field1) < (ground.field2))"));
-        assertEquals(output, 1, countMatches(output, "(THIZ_field1)++;"));
+        assertEquals(output, 1, countMatches(output, "while (((THIZ_field1)) < ((ground.field2)))"));
+        assertEquals(output, 1, countMatches(output, "((THIZ_field1))++;"));
     }
 }

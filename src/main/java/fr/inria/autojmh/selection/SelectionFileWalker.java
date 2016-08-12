@@ -68,8 +68,13 @@ public class SelectionFileWalker extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
+    /**
+     * Get the class name given the path where the class lies
+     * @param file Path to the file containing the class
+     * @return Class Name
+     */
     private String getClassName(Path file) {
-        String path = rootPath.relativize(file).toString().replace("\\", ".");
+        String path = rootPath.relativize(file).toString().replace("\\", ".").replace("/", ".");
         return path.substring(0, path.lastIndexOf(".java"));
     }
 

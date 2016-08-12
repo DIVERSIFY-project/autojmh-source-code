@@ -22,8 +22,7 @@ public class TemplateInputVariableTest {
 
         BenchSnippet snippet = loadFirstSnippets(this, "anIntMethod", CtAssignment.class);
         //We don't use the get Accesses method because is to heavy in logic
-        List<CtVariableAccess> vars = snippet.getASTElement().getElements(
-                new TypeFilter<CtVariableAccess>(CtVariableAccess.class));
+        List<CtVariableAccess> vars = snippet.getASTElement().getElements(new TypeFilter<>(CtVariableAccess.class));
         TemplateInputVariable var = new TemplateInputVariable();
         var.setPrinter(new AJMHPrettyPrinter(snippet));
         var.setVariableAccess(vars.get(0));

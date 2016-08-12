@@ -40,43 +40,55 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
         super(snippet.getASTElement().getFactory().getEnvironment());
     }
 
+//    public <T> void visitCtTargetedAccess(CtTargetedAccess<T> targetedAccess) {
+    //      visitCtVariableAccess(targetedAccess);
 
-    public <T> void visitCtTargetedAccess(CtTargetedAccess<T> targetedAccess) {
-        visitCtVariableAccess(targetedAccess);
-        /*
-        enterCtExpression(targetedAccess);
-        if (targetedAccess.getTarget() != null) {
-            scan(targetedAccess.getTarget());
-            write(".");
-            context.ignoreStaticAccess = true;
-        }
-        context.ignoreGenerics = true;
-        scan(targetedAccess.getVariable());
+    /*        enterCtExpression(targetedAccess);
+          if (targetedAccess.getTarget() != null) {
+              scan(targetedAccess.getTarget());
+              write(".");
+              context.ignoreStaticAccess = true;
+          }
+          context.ignoreGenerics = true;
+          scan(targetedAccess.getVariable());
 
-        context.ignoreGenerics = false;
-        context.ignoreStaticAccess = false;
-        exitCtExpression(targetedAccess);*/
-    }
-
+          context.ignoreGenerics = false;
+          context.ignoreStaticAccess = false;
+          exitCtExpression(targetedAccess);*/
+//    }
     @Override
     public <T> void visitCtThisAccess(CtThisAccess<T> thisAccess) {
         enterCtExpression(thisAccess);
-        if (thisAccess.isQualified() && thisAccess.isImplicit()) {
+/*        if (thisAccess.isQualified() && thisAccess.isImplicit()) {
             throw new RuntimeException("inconsistent this definition");
-        }
-        if (thisAccess.isQualified()) {
-            visitCtTypeReferenceWithoutGenerics(thisAccess.getType());
-            write(".");
         }
         if (!thisAccess.isImplicit()) {
             write("THIZ");
-            //write("this");
-        }
+        } else {
+            visitCtTypeReferenceWithoutGenerics(thisAccess.getType());
+            write(".");
+        }*/
+        write("THIZ");
         exitCtExpression(thisAccess);
     }
 
+    @Override
+    public <T> void visitCtFieldRead(CtFieldRead<T> fieldRead) {
+        enterCtExpression(fieldRead);
+        visitCtVariableRead(fieldRead);
+        exitCtExpression(fieldRead);
+    }
 
-    public <T> void visitCtVariableAccess(CtVariableAccess<T> variableAccess) {
+    @Override
+    public <T> void visitCtFieldWrite(CtFieldWrite<T> fieldWrite) {
+        enterCtExpression(fieldWrite);
+        visitCtVariableRead(fieldWrite);
+        exitCtExpression(fieldWrite);
+    }
+
+
+    @Override
+    public <T> void visitCtVariableRead(CtVariableRead<T> variableAccess) {
         try {
             boolean isField = variableAccess instanceof CtFieldAccess;
             CtVariable var = null;
@@ -142,7 +154,7 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
                     }
                 }
             } else {
-                super.visitCtVariableAccess(variableAccess);
+                super.visitCtVariableRead(variableAccess);
             }
 
         } catch (NullPointerException ex) {
@@ -152,7 +164,7 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
 
     @Override
     public <A extends Annotation> void visitCtAnnotation(CtAnnotation<A> annotation) {
-        if ( !annotation.getAnnotationType().getQualifiedName().equals("java.lang.Override") )
+        if (!annotation.getAnnotationType().getQualifiedName().equals("java.lang.Override"))
             super.visitCtAnnotation(annotation);
     }
 
@@ -163,8 +175,13 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
         boolean isStatic = m.getModifiers().contains(STATIC);
         printingMethods = true;
 
-        visitCtNamedElement(m);
-        writeGenericsParameter(m.getFormalTypeParameters());
+        this.visitCtNamedElement(m);
+        this.writeModifiers(m);
+        if(m.isDefaultMethod()) {
+            this.write("default ");
+        }
+
+        writeFormalTypeParameters(m.getFormalTypeParameters());
         scan(m.getType());
         write(" ");
         if (isStatic) {
@@ -241,7 +258,7 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
                     write("super");
                 }
             } catch (Exception e) {
-                Launcher.logger.error(e.getMessage(), e);
+                Launcher.LOGGER.error(e.getMessage(), e);
             }
         } else {
             // It's a method invocation
@@ -257,21 +274,21 @@ public class AJMHPrettyPrinter extends DefaultJavaPrettyPrinter {
                         write(".");
                     }
                 } catch (Exception e) {
-                    Launcher.logger.error(e.getMessage(), e);
+                    Launcher.LOGGER.error(e.getMessage(), e);
                 }
-            } else if (invocation.getTarget() != null) {
+            } else if (!(invocation.getTarget() instanceof CtThisAccess)) {
                 target = invocation.getTarget().toString();
-            } else if (invocation.getGenericTypes() != null && invocation.getGenericTypes().size() > 0) {
+            } else if (invocation.getActualTypeArguments() != null && invocation.getActualTypeArguments().size() > 0) {
                 target = "THIZ";
-            } else if ( isTargetAllowed(invocation) ) {
+            } else if (isTargetAllowed(invocation)) {
                 target = "THIZ";
             }
 
             boolean removeLastChar = false;
-            if (invocation.getGenericTypes() != null
-                    && invocation.getGenericTypes().size() > 0) {
+            if (invocation.getActualTypeArguments() != null
+                    && invocation.getActualTypeArguments().size() > 0) {
                 write("<");
-                for (CtTypeReference<?> ref : invocation.getGenericTypes()) {
+                for (CtTypeReference<?> ref : invocation.getActualTypeArguments()) {
                     //context.isInvocation = true;
                     write(ref.getQualifiedName());
                     //context.isInvocation = false;

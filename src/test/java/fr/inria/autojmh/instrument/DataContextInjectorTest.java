@@ -24,12 +24,13 @@ public class DataContextInjectorTest {
     private void testCollections(String method, String expected, String... nonExpected) throws Exception {
         testCollections(CtLoop.class, method, expected, nonExpected);
     }
+
     private void testCollections(Class<?> klass, String method, String expected, String... nonExpected) throws Exception {
         BenchSnippet snippet = loadFirstSnippets(this, method, klass);
         BenchSnippetDetectionData dd = new BenchSnippetDetectionData(snippet);
         //Finally inject
         DataContextInjector injector = new DataContextInjector();
-        injector.inject(snippet.getASTElement(), dd);
+        injector.listen(dd);
 
         boolean found = false;
         List<CtCodeSnippetStatement> sts = snippet.getASTElement().getParent().getElements(
@@ -72,7 +73,7 @@ public class DataContextInjectorTest {
         BenchSnippetDetectionData dd = new BenchSnippetDetectionData(snippet);
         //Finally inject
         DataContextInjector injector = new DataContextInjector();
-        injector.inject(snippet.getASTElement(), dd);
+        injector.listen(dd);
 
         List<CtCodeSnippetStatement> injected = snippet.getASTElement().getElements(
                 new TypeFilter<CtCodeSnippetStatement>(CtCodeSnippetStatement.class));
@@ -102,25 +103,22 @@ public class DataContextInjectorTest {
         //Obtain a CtElement to play with
         final CtStatement[] s = new CtStatement[1];
         s[0] = null;
-        Factory factory = new SpoonMetaFactory().buildNewFactory(
-                this.getClass().getResource("/input_sources").toURI().getPath(), 5);
-        ProcessingManager pm = new QueueProcessingManager(factory);
-        pm.addProcessor(new AbstractProcessor<CtIf>() {
-            @Override
-            public void process(CtIf element) {
-                if (s[0] != null) return;
-                s[0] = element;
-            }
-        });
-        pm.process();
 
+        SpoonMetaFactory.process(this.getClass().getResource("/input_sources").toURI().getPath(),
+                new AbstractProcessor<CtIf>() {
+                    @Override
+                    public void process(CtIf element) {
+                        if (s[0] != null) return;
+                        s[0] = element;
+                    }
+                });
         //Build a detection data for this injector
         BenchSnippetDetectionData dd = new BenchSnippetDetectionData(new BenchSnippet());
         dd.getSnippet().setASTElement(s[0]);
 
         //Finally inject
         DataContextInjector injector = new DataContextInjector();
-        injector.inject(s[0], dd);
+        injector.listen(dd);
 
         //Assert that two statements where inserted before and after the if
         CtBlock parent = (CtBlock) s[0].getParent();

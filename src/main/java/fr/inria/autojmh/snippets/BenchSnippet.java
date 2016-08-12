@@ -319,9 +319,9 @@ public class BenchSnippet implements Configurable {
         //Check some preconditions needed for the processor to run:
         //All variable access made inside the statement
         List<CtVariableAccess> access = statement.getElements(
-                new TypeFilter<CtVariableAccess>(CtVariableAccess.class));
+                new TypeFilter<>(CtVariableAccess.class));
 
-        if (statement.getElements(new TypeFilter<CtThisAccess>(CtThisAccess.class)).size() > 0) {
+        if (statement.getElements(new TypeFilter<>(CtThisAccess.class)).size() > 0) {
             mustSerializeThiz = new Preconditions().checkTypeRef(statement.getParent(CtClass.class).getReference());
         }
 
@@ -330,8 +330,7 @@ public class BenchSnippet implements Configurable {
         //Get all THIZ field access from all invocations used in the element
         HashSet<CtInvocation> visited = new HashSet<>();
         Stack<CtInvocation> invStack = new Stack<>();
-        invStack.addAll(statement.getElements(
-                new TypeFilter<CtInvocation>(CtInvocation.class)));
+        invStack.addAll(statement.getElements(new TypeFilter<>(CtInvocation.class)));
         while (!invStack.empty()) {
             CtInvocation inv = invStack.pop();
             if (!visited.contains(inv)) {
@@ -359,10 +358,6 @@ public class BenchSnippet implements Configurable {
         access = cleanRepeatedAccesses(access);
         setAccesses(access);
 
-        //All local variables inside the body
-        List<CtLocalVariable> localVars = statement.getElements(
-                new TypeFilter<CtLocalVariable>(CtLocalVariable.class));
-
         //Find initialized variables of allowed types
         ControlFlowBuilder v = new ControlFlowBuilder();
         CtMethod m = statement.getParent(CtMethod.class);
@@ -387,20 +382,7 @@ public class BenchSnippet implements Configurable {
             throw e;
         }
 
-        //Remove fields of storable instances
-       /* CtVariableAccess thizVarAccess = null;
-        //Try first finding the real 'this'
-        for (CtVariableAccess thisA : access)
-            if (thisA.getVariable().getSimpleName().equals("this")) {
-                thizVarAccess = thisA;
-            } else if (thisA instanceof CtTargetedAccess &&
-                    ((CtTargetedAccess) thisA).getTarget() instanceof CtThisAccess) {
-                CtThisAccess thisAccess = (CtThisAccess) ((CtTargetedAccess) thisA).getTarget();
-                CodeFactory c = astElement.getFactory().Code();
-                CtLocalVariable thizVariable = c.createLocalVariable(
-                        astElement.getParent(CtClass.class).getReference(), "THIZ", thisAccess);
-                thizVarAccess = c.createVariableAccess(thizVariable.getReference(), false);
-            }*/
+
         needsInitialization = initialized.size() > 0;
         if (access.size() <= 0) return true;
 
@@ -411,26 +393,15 @@ public class BenchSnippet implements Configurable {
             CtVariableAccess a = access.get(i);
             if (canBeReplacedByTarget(a)) {
                 CtVariableAccess targetOfA = null;
-                CtTargetedAccess ta = (CtTargetedAccess) a;
+                CtTargetedExpression ta = (CtTargetedExpression) a;
                 if (ta.getTarget() != null) {
                     if (ta.getTarget() instanceof CtVariableAccess) {
                         targetOfA = (CtVariableAccess) ta.getTarget();
                     } else if (ta.getTarget() instanceof CtThisAccess) {
-                        //targetOfA = thizVarAccess;
                         mustSerializeThiz = true;
                     }
                 } else {
                     mustSerializeThiz = true;
-                    /*
-                    if (thizVarAccess == null) {
-                        //No real 'this' could be found, build one
-                        CtCodeSnippetExpression ex = new CtCodeSnippetExpressionImpl();
-                        ex.setValue("this");
-                        CtLocalVariable thiz = a.getFactory().Code().createLocalVariable(
-                                a.getParent(CtClass.class).getReference(), "THIZ", ex);
-                        thizVarAccess = a.getFactory().Code().createVariableAccess(thiz.getReference(), false);
-                    }
-                    targetOfA = thizVarAccess;*/
                 }
                 if (targetOfA != null) {
                     if (!access.contains(targetOfA)) access.add(targetOfA);
@@ -458,12 +429,7 @@ public class BenchSnippet implements Configurable {
             String signature = "";
             if (a instanceof CtFieldAccess && ((CtFieldAccess) a).getTarget() != null)
                 signature = ((CtFieldAccess) a).getTarget().toString();
-            /*try {
-                signature = a.toString() + a.getVariable().getClass().getSimpleName();
-            } catch (NullPointerException ex) {*/
             signature += a.getVariable().getSimpleName() + a.getVariable().getClass().getSimpleName();
-            //}
-            //String signature = a.toString() + a.getVariable().getClass().getSimpleName();
             if (!varSignatures.contains(signature)) {
                 varSignatures.add(signature);
                 access.add(a);

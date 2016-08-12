@@ -19,8 +19,7 @@ public class MethodAttributesTest {
 
     public ModifierKind findVisibility(String method) throws Exception {
         List<BenchSnippet> list = loadSnippets(this, method, CtReturn.class);
-        List<CtInvocation> invs = list.get(0).getASTElement().getElements(
-                new TypeFilter<CtInvocation>(CtInvocation.class));
+        List<CtInvocation> invs = list.get(0).getASTElement().getElements(new TypeFilter<>(CtInvocation.class));
         return MethodAttributes.visibility(invs.get(0));
 
     }

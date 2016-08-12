@@ -28,8 +28,7 @@ public class ExtractedMethods extends AbstractMicrobenchmarkPart {
         HashSet<CtInvocation> visited = new HashSet<>();
         HashSet<CtExecutable> extracted = new HashSet<>();
         Stack<CtInvocation> stack = new Stack<>();
-        for (CtInvocation inv : snippet.getASTElement().getElements(
-                new TypeFilter<CtInvocation>(CtInvocation.class)))
+        for (CtInvocation inv : snippet.getASTElement().getElements(new TypeFilter<>(CtInvocation.class)))
             if (visibility(inv) != PUBLIC)
                 stack.push(inv);
 
@@ -45,7 +44,7 @@ public class ExtractedMethods extends AbstractMicrobenchmarkPart {
                 printer.scan(ex);
                 sb.append(printer.toString()).append("\n");
             }
-            for (CtInvocation child : inv.getElements(new TypeFilter<CtInvocation>(CtInvocation.class))) {
+            for (CtInvocation child : inv.getElements(new TypeFilter<>(CtInvocation.class))) {
                 if (!visited.contains(child) && visibility(inv) != PUBLIC)
                     stack.push(child);
             }

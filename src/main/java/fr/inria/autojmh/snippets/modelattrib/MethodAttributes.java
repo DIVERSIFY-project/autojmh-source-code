@@ -2,12 +2,10 @@ package fr.inria.autojmh.snippets.modelattrib;
 
 import org.apache.log4j.Logger;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
-import spoon.reflect.declaration.ModifierKind;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.support.reflect.reference.CtExecutableReferenceImpl;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -87,8 +85,13 @@ public class MethodAttributes {
 
         //Try to get visibility
         try {
-            if (ex.getDeclaration() != null) m = ex.getDeclaration().getVisibility();
-            else if (safeGetActualMethod(ex) != null) {
+            if (ex.getDeclaration() != null ) {
+                if ( ex.getDeclaration() instanceof CtMethod ) {
+                    return ((CtMethod)ex.getDeclaration()).getVisibility();
+                } else if (ex.getDeclaration() instanceof CtConstructor) {
+                    return ((CtConstructor)ex.getDeclaration()).getVisibility();
+                }
+            } else if (safeGetActualMethod(ex) != null) {
                 int i = ex.getActualMethod().getModifiers();
                 if (Modifier.isProtected(i)) m = ModifierKind.PROTECTED;
                 if (Modifier.isPrivate(i)) m = ModifierKind.PRIVATE;

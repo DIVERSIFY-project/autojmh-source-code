@@ -143,9 +143,9 @@ public class BenchSnippetTest {
     public void test_CallPrivateMethodWithPrivateFields() throws Exception {
         BenchSnippet snippet = loadFirstSnippets(this, "callPrivateMethodWithPrivateFields", CtReturn.class);
         snippet.setPrinterToAJMH();
-        assertEquals(snippet.toString(), "k", snippet.getTemplateAccessesWrappers().get(0).getTemplateCodeCompilableName());
-        assertEquals(snippet.toString(), "THIZ_field1", snippet.getTemplateAccessesWrappers().get(1).getTemplateCodeCompilableName());
-        assertEquals(snippet.toString(), 2, snippet.getInitialized().size());
+        assertEquals(snippet.getCode(), "k", snippet.getTemplateAccessesWrappers().get(0).getTemplateCodeCompilableName());
+        assertEquals(snippet.getCode(), "THIZ_field1", snippet.getTemplateAccessesWrappers().get(1).getTemplateCodeCompilableName());
+        assertEquals(snippet.getCode(), 2, snippet.getInitialized().size());
 
     }
 

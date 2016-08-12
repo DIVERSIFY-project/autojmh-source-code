@@ -10,6 +10,8 @@ import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.factory.Factory;
 import spoon.support.QueueProcessingManager;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -41,18 +43,13 @@ public class ElementProvider {
                                                   final Class<?> klass) throws Exception {
 
         String resource = "/testproject/src/main/java/fr/inria/testproject/";
-        if ( className.contains(".") ) {
+        if (className.contains(".")) {
             resource += className.substring(0, className.indexOf("."));
             className = className.substring(className.indexOf(".") + 1);
-        }
-        else resource += "context";
+        } else resource += "context";
 
         final String theClass = className;
-
         //Process the two files
-        final Factory factory = new SpoonMetaFactory().buildNewFactory(
-                obj.getClass().getResource(resource).toURI().getPath(), 5);
-        ProcessingManager pm = new QueueProcessingManager(factory);
         SnippetSelector<CtStatement> selector = new SnippetSelector<CtStatement>() {
             @Override
             public boolean isToBeProcessed(CtStatement candidate) {
@@ -75,8 +72,7 @@ public class ElementProvider {
                 }
             }
         };
-        pm.addProcessor(selector);
-        pm.process();
+        SpoonMetaFactory.process(obj.getClass().getResource(resource).toURI().getPath(), selector);
         return selector.getSnippets();
     }
 

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import static spoon.reflect.declaration.ModifierKind.FINAL;
-import static spoon.reflect.declaration.ModifierKind.STATIC;
 
 /**
  * Class to determine some important high level variable accesses
@@ -51,19 +50,18 @@ public class VariableAccessAttributes {
     }
 
     /**
-     * Indicates if variable 'a' is public a field of a class that can be stored.
+     * Indicates if variable 'variableAccess' is a non-constant public field of a class that can be stored.
      * <p>
      * In that case we store the object and not the field
      *
-     * @param a Variable to determine whether it must be serialized or not
+     * @param variableAccess Variable to determine whether it must be serialized or not
      * @return True if it must be serialized, false otherwise.
      */
-    public static boolean canBeReplacedByTarget(CtVariableAccess a) {
-        //boolean result = !isLocalVariable(a, localVars);
-        if (a instanceof CtTargetedAccess) {
-            CtTargetedAccess access = (CtTargetedAccess) a;
+    public static boolean canBeReplacedByTarget(CtVariableAccess variableAccess) {
+        if (variableAccess instanceof CtTargetedExpression && !isAConstant(variableAccess)) {
+            CtTargetedExpression access = (CtTargetedExpression) variableAccess;
 
-            CtTypeReference ref = null;
+            CtTypeReference ref;
             //This code is to get the type of the target.
             //Spoon have so many undefined behaviors as for version 3.0,
             //forcing to have this somehow complicated code to handle specific cases
@@ -72,16 +70,16 @@ public class VariableAccessAttributes {
                 if (ref == null && access.getTarget() instanceof CtFieldAccess)
                     ref = ((CtFieldAccess) access.getTarget()).getVariable().getType();
                 if (ref == null)
-                    throw new RuntimeException("Unable to get type of " + ((CtTargetedAccess) a).getTarget().toString());
+                    throw new RuntimeException("Unable to get type of " + ((CtTargetedExpression) variableAccess).getTarget().toString());
             }
             //if access is null then is this
             else ref = access.getParent(CtClass.class).getReference();
 
             try {
-                //If is a public field variable of an accepted type, it should not be stored
+                //If is variableAccess public field variable of an accepted type, it should not be stored
                 return new Preconditions().checkTypeRef(ref) &&
-                        (access.getVariable().getDeclaration() == null ||
-                                access.getVariable().getDeclaration().getVisibility() == ModifierKind.PUBLIC);
+                        (variableAccess.getVariable().getDeclaration() == null ||
+                                variableAccess.getVariable().getDeclaration().getVisibility() == ModifierKind.PUBLIC);
             } catch (NullPointerException ex) {
                 return !(new Preconditions().checkTypeRef(ref));
             }
@@ -128,7 +126,7 @@ public class VariableAccessAttributes {
      * @return
      */
     public static boolean isTargetAllowed(CtTargetedExpression targetedAccess) {
-        if (targetedAccess.getTarget() != null) {
+        if (!(targetedAccess.getTarget() instanceof CtThisAccess) ) {
             CtTypeReference ref = targetedAccess.getTarget().getType();
             if (ref == null && targetedAccess.getTarget() instanceof CtFieldAccess)
                 ref = ((CtFieldAccess) targetedAccess.getTarget()).getVariable().getType();
@@ -150,8 +148,8 @@ public class VariableAccessAttributes {
             }
             //An static final variable is indeed initialized,
             Set<ModifierKind> ms = a.getVariable().getDeclaration().getModifiers();
-            if (ms.contains(STATIC) && ms.contains(FINAL)) return true;
-        } catch (NullPointerException ex) {
+            if (ms.contains(FINAL)) return true;
+        } catch (NullPointerException | IllegalStateException ex) {
             return false;
         }
         return false;
@@ -177,7 +175,7 @@ public class VariableAccessAttributes {
             if (a instanceof CtFieldAccess) {
                 CtFieldAccess ta = (CtFieldAccess) a;
                 //Is a field of 'this'
-                if (ta.getTarget() == null) return true;
+                if (ta.getTarget() == null || ta.getTarget() instanceof CtThisAccess) return true;
                 if (ta.getTarget() != null && ta.getTarget() instanceof CtVariableAccess) {
                     return isInitialized((CtVariableAccess) ta.getTarget(), statement, vars);
                 }

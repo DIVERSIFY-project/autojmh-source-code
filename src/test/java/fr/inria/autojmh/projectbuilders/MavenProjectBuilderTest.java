@@ -44,9 +44,9 @@ public class MavenProjectBuilderTest {
         String out = builder.getPomFileGenerator().getOutput();
         System.out.println(out);
 
-        assertTrue(out.contains("<groupId>fr.inria.juncoprovider</groupId>"));
-        assertTrue(out.contains("<artifactId>junco-provider</artifactId>"));
-        assertTrue(out.contains("<version>0.1</version>"));
+//        assertTrue(out.contains("<groupId>fr.inria.juncoprovider</groupId>"));
+//        assertTrue(out.contains("<artifactId>junco-provider</artifactId>"));
+//        assertTrue(out.contains("<version>0.1</version>"));
         assertTrue(out.contains("<groupId>fr.inria.covermath</groupId>"));
         assertTrue(out.contains("<artifactId>test-project</artifactId>"));
         assertTrue(out.contains("<version>1.0-SNAPSHOT</version>"));

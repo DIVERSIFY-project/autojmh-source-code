@@ -35,11 +35,7 @@ public class TaggletStatementDetectorTest {
         p.setTagglets(tagglets);
 
         //Process the two files
-        Factory factory = new SpoonMetaFactory().buildNewFactory(sourcePath, 5);
-        ProcessingManager pm = new QueueProcessingManager(factory);
-        pm.addProcessor(p);
-        pm.process();
-
+        SpoonMetaFactory.process(sourcePath, p);
         return p;
     }
 

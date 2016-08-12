@@ -1,7 +1,6 @@
 package fr.inria.autojmh.snippets;
 
 import fr.inria.autojmh.snippets.modelattrib.TypeAttributes;
-import fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes;
 import spoon.reflect.code.CtFieldAccess;
 import spoon.reflect.code.CtThisAccess;
 import spoon.reflect.code.CtVariableAccess;
@@ -10,6 +9,7 @@ import spoon.reflect.declaration.CtClass;
 import spoon.reflect.reference.CtArrayTypeReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
+
 import static fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes.isAConstant;
 import static fr.inria.autojmh.snippets.modelattrib.VariableAccessAttributes.visibility;
 import static spoon.reflect.declaration.ModifierKind.PUBLIC;
@@ -77,7 +77,7 @@ public class TemplateInputVariable {
 
         TypeAttributes refAttr = new TypeAttributes(typeRef);
 
-        if ( typeRef instanceof CtArrayTypeReference) {
+        if (typeRef instanceof CtArrayTypeReference) {
             CtArrayTypeReference ref = (CtArrayTypeReference) typeRef;
 
             int arrayDimentions = 1;
@@ -101,8 +101,7 @@ public class TemplateInputVariable {
             if (refAttr.isSerializableCollection()) {
                 this.setLoadMethodName("Serializable" + typeRef.getSimpleName());
                 logMethodName = "SerializableCollection";
-            }
-            else {
+            } else {
                 CtTypeReference ref = typeRef;
                 ref = ref.getActualTypeArguments().get(0);
                 setLoadMethodName(ref.getSimpleName() + typeRef.getSimpleName());
@@ -124,7 +123,7 @@ public class TemplateInputVariable {
         SourcePosition pos = parent.getASTElement().getPosition();
         loggingSignature = pos.getCompilationUnit().getMainType().getQualifiedName().replace(".", "-")
                 + "-" + pos.getLine() + "-" + getVariableName();
-        if ( typeRef.isPrimitive() ) packageQualifiedName = "java.lang." + typeRef.getQualifiedName();
+        if (typeRef.isPrimitive()) packageQualifiedName = "java.lang." + typeRef.getQualifiedName();
         else packageQualifiedName = typeRef.getQualifiedName();
     }
 
@@ -200,7 +199,7 @@ public class TemplateInputVariable {
 
     public void setVariableAccess(CtVariableAccess variableAccess) {
         this.variableAccess = variableAccess;
-        if ( variableAccess != null ) {
+        if (variableAccess != null) {
             setVariableName(getCompilableName(variableAccess, '_'));
             setVariableTypeName(variableAccess.getVariable().getType().toString());
             setIsArray(variableAccess.getVariable().getType() instanceof CtArrayTypeReference);
@@ -224,14 +223,16 @@ public class TemplateInputVariable {
 
     /**
      * If the wrapper is wrapping a constant, tell the value
+     *
      * @return A string with the value
      */
     public String getConstantValue() {
-        if ( variableAccess != null ) {
+        if (variableAccess != null) {
             printer.reset();
             printer.scan(variableAccess.getVariable().getDeclaration().getDefaultExpression());
             return printer.toString();
-        } return "";
+        }
+        return "";
     }
 
 
@@ -240,10 +241,10 @@ public class TemplateInputVariable {
      */
     public String getInstrumentedCodeCompilableName() {
         String result = "";
-        if ( variableAccess != null )
+        if (variableAccess != null)
             result = getCompilableName(variableAccess, '.');
         else result = getVariableName();
-        if ( result.equals("THIZ") ) result = "this";
+        if (result.equals("THIZ")) result = "this";
         return result;
     }
 
@@ -251,16 +252,15 @@ public class TemplateInputVariable {
      * Gets a name for a variable access that can be placed in the microbenchmark code.
      */
     public String getTemplateCodeCompilableName() {
-        if ( variableAccess != null ) {
+        if (variableAccess != null) {
             printer.reset();
             printer.scan(variableAccess);
-            String result = printer.toString().replaceAll("\\(|\\)","");
-            if ( result.contains(".") )
-                throw new IllegalArgumentException("Invalid compilable name");
+            String result = printer.toString().replaceAll("\\(|\\)", "");
+/*            if (!getIsPublicConstant() && result.contains("."))
+                throw new IllegalArgumentException("Invalid compilable name");*/
             return result;
             //return getCompilableName(variableAccess, '_');
-        }
-        else return "THIZ";
+        } else return "THIZ";
     }
 
     /**
@@ -293,7 +293,7 @@ public class TemplateInputVariable {
             CtFieldAccess field = (CtFieldAccess) access;
             if (field.getTarget() instanceof CtVariableAccess) {
                 sb.append(getCompilableName((CtVariableAccess) field.getTarget(), sep)).append(sep);
-            } else if (field.getTarget() instanceof CtThisAccess ) {
+            } else if (field.getTarget() instanceof CtThisAccess) {
                 sb.append("this").append(sep);
             }
             if (sep != '.')

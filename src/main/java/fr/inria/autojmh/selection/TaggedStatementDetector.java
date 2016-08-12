@@ -135,7 +135,7 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
             else {
                 snippets.add(s);
                 BenchSnippetDetectionData data = new BenchSnippetDetectionData(s);
-                notify(SNIPPET_DETECTED, s.getASTElement(), data);
+                notify(SNIPPET_DETECTED, data);
             }
         }
     }
@@ -146,5 +146,10 @@ public class TaggedStatementDetector<E extends CtStatement> extends SnippetSelec
 
     public void setFailFirst(boolean failFirst) {
         this.failFirst = failFirst;
+    }
+
+    @Override
+    public Collection<String> eventsSupported() {
+        return Arrays.asList(SNIPPET_DETECTED);
     }
 }

@@ -8,6 +8,8 @@ import fr.inria.diversify.syringe.detectors.AbstractDetector;
 import spoon.reflect.code.CtStatement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,12 +50,17 @@ public abstract class SnippetSelector<E extends CtStatement> extends AbstractDet
     public void processingDone() {
         for (BenchSnippet s : getSnippets()) {
             BenchSnippetDetectionData data = new BenchSnippetDetectionData(s);
-            notify(SNIPPET_DETECTED, s.getASTElement(), data);
+            notify(SNIPPET_DETECTED, data);
         }
     }
 
     @Override
     public void configure(AJMHConfiguration configuration) {
         preconditions = configuration.getPreconditions();
+    }
+
+    @Override
+    public Collection<String> eventsSupported() {
+        return Arrays.asList("@@SNIPPED");
     }
 }

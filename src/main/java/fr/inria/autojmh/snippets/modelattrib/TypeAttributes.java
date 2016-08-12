@@ -2,15 +2,10 @@ package fr.inria.autojmh.snippets.modelattrib;
 
 import fr.inria.autojmh.snippets.Preconditions;
 import org.apache.log4j.Logger;
-import spoon.reflect.declaration.CtTypeParameter;
 import spoon.reflect.reference.CtArrayTypeReference;
-import spoon.reflect.reference.CtTypeParameterReference;
 import spoon.reflect.reference.CtTypeReference;
-import spoon.support.reflect.reference.CtTypeReferenceImpl;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -74,7 +69,7 @@ public class TypeAttributes {
     public static boolean isCollection(CtTypeReference ref) {
         try {
             if (ref instanceof CtArrayTypeReference) return true;
-            Set<CtTypeReference> refs = ref.getSuperInterfaces();
+            Set<CtTypeReference<?>> refs = ref.getSuperInterfaces();
             if (refs == null) return false;
             if ( ref.getQualifiedName().equals("java.util.Collection") ) return true;
             for (CtTypeReference r : refs)

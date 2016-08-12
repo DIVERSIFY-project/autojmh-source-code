@@ -30,7 +30,7 @@ public class BenchmarkTest {
         configuration.setPackageName("fr.mypackage");
         configuration.setGenerationOutputPath("/output_sources");
         configuration.setTemplatePath(ResourcesPaths.getMainPath("templates"));
-        configuration.setGenerationOutputPath("/output");
+        configuration.setGenerationOutputPath("./output");
         return configuration;
     }
 
@@ -40,25 +40,20 @@ public class BenchmarkTest {
 
         //Initialize the CtElements
 
-        Factory factory = new SpoonMetaFactory().buildNewFactory(
-                this.getClass().getResource("/input_sources").toURI().getPath(), 5);
-        ProcessingManager pm = new QueueProcessingManager(factory);
-        pm.addProcessor(new AbstractProcessor<CtLoop>() {
-            @Override
-            public void process(CtLoop element) {
-                if (snippet.getASTElement() != null) return;
-                snippet.setASTElement(element);
-                List<CtVariableAccess> access = snippet.getASTElement().getElements(
-                        new TypeFilter<CtVariableAccess>(CtVariableAccess.class));
-                snippet.getAccesses().addAll(access);
-                access.remove(0);//Make not all variables initialized
-                snippet.getInitialized().addAll(access);
-            }
-        });
-        pm.process();
-
-        //snippet.setId(4);
-
+        SpoonMetaFactory.process(
+                this.getClass().getResource("/input_sources").toURI().getPath(),
+                new AbstractProcessor<CtLoop>() {
+                    @Override
+                    public void process(CtLoop element) {
+                        if (snippet.getASTElement() != null) return;
+                        snippet.setASTElement(element);
+                        List<CtVariableAccess> access = snippet.getASTElement().getElements(
+                                new TypeFilter<CtVariableAccess>(CtVariableAccess.class));
+                        snippet.getAccesses().addAll(access);
+                        access.remove(0);//Make not all variables initialized
+                        snippet.getInitialized().addAll(access);
+                    }
+                });
         return snippet;
     }
 

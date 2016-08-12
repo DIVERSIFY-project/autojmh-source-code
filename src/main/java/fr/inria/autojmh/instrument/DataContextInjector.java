@@ -6,8 +6,9 @@ import fr.inria.autojmh.snippets.BenchSnippet;
 import fr.inria.autojmh.snippets.TemplateInputVariable;
 import fr.inria.autojmh.tool.AJMHConfiguration;
 import fr.inria.autojmh.tool.Configurable;
-import fr.inria.diversify.syringe.detectors.DetectionData;
-import fr.inria.diversify.syringe.injectors.AbstractInjector;
+import fr.inria.diversify.syringe.events.DetectionEvent;
+import fr.inria.diversify.syringe.injectors.CtParametrizedSnippetStatement;
+import fr.inria.diversify.syringe.injectors.GenericInjector;
 import org.apache.log4j.Logger;
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
@@ -26,7 +27,7 @@ import java.util.List;
  * <p/>
  * Created by marodrig on 15/09/2015.
  */
-public class DataContextInjector extends AbstractInjector implements Configurable {
+public class DataContextInjector extends GenericInjector implements Configurable {
 
     Logger log = Logger.getLogger(DataContextInjector.class);
 
@@ -47,10 +48,10 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
         m.put("var", wrap.getInstrumentedCodeCompilableName());
         m.put("signature", wrap.getLoggingSignature());
         m.put("type", wrap.getLogMethodName());
-
-        String inj = buildInjection(m);
-        CtCodeSnippetStatement st = new CtCodeSnippetStatementImpl();
-        st.setValue(inj);
+        //String inj = buildInjection(m);
+        CtParametrizedSnippetStatement st = new CtParametrizedSnippetStatement();
+        st.setParameters(m);
+        st.setValue(getInjectionTemplate());
         return st;
     }
 
@@ -69,10 +70,10 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
     }
 
     @Override
-    public void inject(CtElement element, DetectionData data) {
+    public void listen(DetectionEvent data) {
         //Builds the code that is going to be injected in order to record the data context
-
         if (data instanceof BenchSnippetDetectionData) {
+            CtElement element = data.getDetected();
             //Build the before injectors
             BenchSnippet input = ((BenchSnippetDetectionData) data).getSnippet();
 
@@ -80,7 +81,7 @@ public class DataContextInjector extends AbstractInjector implements Configurabl
             if (!input.meetsPreconditions() || !input.isNeedsInitialization()) return;
 
             //Obtain return statements to instrument them
-            List<CtReturn> returns = element.getElements(new TypeFilter<CtReturn>(CtReturn.class));
+            List<CtReturn> returns = element.getElements(new TypeFilter<>(CtReturn.class));
 
             int initializedCount = 0;
             for (TemplateInputVariable wrap : input.getTemplateAccessesWrappers())
